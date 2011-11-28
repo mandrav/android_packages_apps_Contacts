@@ -16,15 +16,7 @@
 
 package com.android.contacts.dialpad;
 
-import com.android.contacts.ContactsUtils;
-import com.android.contacts.R;
-import com.android.contacts.SpecialCharSequenceMgr;
-import com.android.contacts.activities.DialtactsActivity;
-import com.android.contacts.activities.DialtactsActivity.ViewPagerVisibilityListener;
-import com.android.contacts.util.PhoneNumberFormatter;
-import com.android.internal.telephony.ITelephony;
-import com.android.phone.CallLogAsync;
-import com.android.phone.HapticFeedback;
+import java.util.ArrayList;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -64,20 +56,33 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.PopupMenu;
+import android.widget.QuickContactBadge;
 import android.widget.TextView;
 
-import java.util.HashSet;
-import java.util.Set;
+import com.android.contacts.ContactsUtils;
+import com.android.contacts.R;
+import com.android.contacts.SpecialCharSequenceMgr;
+import com.android.contacts.activities.DialtactsActivity;
+import com.android.contacts.activities.DialtactsActivity.ViewPagerVisibilityListener;
+import com.android.contacts.activities.T9Search;
+import com.android.contacts.activities.T9Search.ContactItem;
+import com.android.contacts.activities.T9Search.T9SearchResult;
+import com.android.contacts.util.PhoneNumberFormatter;
+import com.android.internal.telephony.ITelephony;
+import com.android.phone.CallLogAsync;
+import com.android.phone.HapticFeedback;
 
 /**
  * Fragment that displays a twelve-key phone dialpad.
@@ -124,6 +129,13 @@ public class DialpadFragment extends Fragment
     private View mDialButton;
     private ListView mDialpadChooser;
     private DialpadChooserAdapter mDialpadChooserAdapter;
+
+    private T9Search mT9Search;
+    private Button t9toggle;
+    private ListView t9list;
+    private TextView t9search;
+    private QuickContactBadge t9searchbadge;
+    private boolean t9enabled = false;
 
     /**
      * Regular expression prohibiting manual phone call. Can be empty, which means "no rule".
@@ -236,6 +248,39 @@ public class DialpadFragment extends Fragment
                 R.string.config_prohibited_phone_number_regexp);
     }
 
+    private class T9Adapter extends ArrayAdapter<ContactItem> {
+
+        private ArrayList<ContactItem> items;
+
+        public T9Adapter(Context context, int textViewResourceId, ArrayList<ContactItem> items) {
+            super(context, textViewResourceId, items);
+            this.items = items;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View v = convertView;
+            if (v == null) {
+                LayoutInflater vi = (LayoutInflater)getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                v = vi.inflate(R.layout.row, null);
+            }
+            ContactItem o = items.get(position);
+            if (o != null) {
+                TextView tt = (TextView) v.findViewById(R.id.rowText);
+                QuickContactBadge bt = (QuickContactBadge) v.findViewById(R.id.rowBadge);
+                if (tt != null)
+                    tt.setText("Name: "+o.name);
+                bt.assignContactFromPhone(o.number, true);
+                if(bt != null && o.photoUri!=null) {
+                    bt.setImageURI(Uri.parse(o.photoUri));
+                }else {
+                    bt.setImageResource(R.drawable.ic_contact_picture_180_holo_dark);
+                }
+            }
+            return v;
+        }
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedState) {
         View fragmentView = inflater.inflate(R.layout.dialpad_fragment, container, false);
@@ -250,6 +295,12 @@ public class DialpadFragment extends Fragment
         mDigits.setOnKeyListener(this);
         mDigits.setOnLongClickListener(this);
         mDigits.addTextChangedListener(this);
+        t9search = (TextView) fragmentView.findViewById(R.id.mysearch);
+        t9searchbadge = (QuickContactBadge) fragmentView.findViewById(R.id.quick_contact_photo);
+        mT9Search = new T9Search(getActivity());
+        t9list = (ListView)fragmentView.findViewById(R.id.listy);
+        t9toggle=(Button)fragmentView.findViewById(R.id.toggle);
+        t9toggle.setOnClickListener(this);
 
         PhoneNumberFormatter.setPhoneNumberFormattingTextWatcher(getActivity(), mDigits);
 
@@ -655,6 +706,19 @@ public class DialpadFragment extends Fragment
         KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
         mDigits.onKeyDown(keyCode, event);
 
+        T9SearchResult result = mT9Search.search(mDigits.getText().toString());
+        if (result != null && result.getNumResults() > 0) {
+            t9search.setText(result.getName() + " : " + result.getNumber());
+            t9searchbadge.assignContactFromPhone(result.getResults().get(0).number, false);
+            if(result.getResults().get(0).photoUri!=null) {
+                t9searchbadge.setImageURI(Uri.parse(result.getResults().get(0).photoUri));
+            }else {
+                t9searchbadge.setImageResource(R.drawable.ic_contact_picture_180_holo_dark);
+            }
+            T9Adapter abc = new T9Adapter(getActivity(), 0, result.getResults());
+            t9list.setAdapter(abc);
+        }
+
         // If the cursor is at the end of the text we hide it.
         final int length = mDigits.length();
         if (length == mDigits.getSelectionStart() && length == mDigits.getSelectionEnd()) {
@@ -764,6 +828,32 @@ public class DialpadFragment extends Fragment
                 if (popup != null) {
                     popup.show();
                 }
+            }
+            case R.id.t9toggle: {
+                Animation t9animation;
+                if (!t9enabled){
+                    t9animation = AnimationUtils.loadAnimation(getActivity(), R.anim.translate);
+                }else {
+                    t9animation = AnimationUtils.loadAnimation(getActivity(), R.anim.translateout);
+                }
+                mAdditionalButtonsRow.startAnimation(t9animation);
+                mDialpad.startAnimation(t9animation);
+                t9animation.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+                    }
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+                    }
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        mAdditionalButtonsRow.setVisibility(!t9enabled ? View.GONE : View.VISIBLE);
+                        mDialpad.setVisibility(!t9enabled ? View.GONE : View.VISIBLE);
+                        t9list.setVisibility(t9enabled ? View.GONE : View.VISIBLE);
+                        t9enabled=!t9enabled;
+                    }
+                });
+                return;
             }
         }
     }
@@ -1021,7 +1111,7 @@ public class DialpadFragment extends Fragment
      */
     private void showDialpadChooser(boolean enabled) {
         // Check if onCreateView() is already called by checking one of View objects.
-        if (!isLayoutReady()) {
+        if (!isLayoutReady() || t9enabled) {
             return;
         }
 
