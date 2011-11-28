@@ -707,8 +707,8 @@ public class DialpadFragment extends Fragment
 
         T9SearchResult result = mT9Search.search(mDigits.getText().toString());
         if (result != null && result.getNumResults() > 0) {
-            t9search.setText(result.getName() + " : " + result.getNumber());
-            t9searchbadge.assignContactFromPhone(result.getResults().get(0).number, false);
+            t9search.setText(result.getTopName() + " : " + result.getTopNumber());
+            t9searchbadge.assignContactFromPhone(result.getTopNumber(), false);
             if(result.getResults().get(0).photoUri!=null) {
                 t9searchbadge.setImageURI(Uri.parse(result.getResults().get(0).photoUri));
             }else {

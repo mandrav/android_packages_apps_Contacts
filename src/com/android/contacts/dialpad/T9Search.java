@@ -45,6 +45,12 @@ class T9Search {
         public int getNumResults() {
             return numResults;
         }
+        public String getTopName() {
+            return mResults.get(0).name;
+        }
+        public String getTopNumber() {
+            return mResults.get(0).number;
+        }
         public ArrayList<ContactItem> getResults() {
             return mResults;
         }
