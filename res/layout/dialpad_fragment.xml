@@ -63,18 +63,18 @@
 		android:layout_height="0px"
 		android:layout_weight="0.200">
 		<QuickContactBadge
-			android:id="@+id/quick_contact_photo"
+			android:id="@+id/t9badge"
 			android:layout_width="@dimen/call_log_list_contact_photo_size"
 			android:layout_height="@dimen/call_log_list_contact_photo_size"
 			android:layout_centerVertical="true"
 			android:focusable="true" />
 		<TextView
-			android:id="@+id/mysearch"
+			android:id="@+id/t9search"
 			android:layout_weight="1"
 			android:layout_width="0dp"
 			android:layout_height="match_parent" />
 		<Button
-			android:id="@+id/toggle"
+			android:id="@+id/t9toggle"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:text="@string/contactsList" />
@@ -82,7 +82,7 @@
 
     <ListView
         android:layout_width="match_parent"
-        android:id="@+id/listy"
+        android:id="@+id/t9list"
         android:visibility="gone"
         android:background="@drawable/dialpad_background"
         android:layout_height="0dp"

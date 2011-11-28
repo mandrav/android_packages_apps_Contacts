@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.android.contacts.activities;
+package com.android.contacts.dialpad;
 
 import java.util.ArrayList;
 import java.util.regex.Pattern;
@@ -13,10 +13,10 @@ import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Contacts;
 
 /**
- * @author shade
+ * @author shade,Danesh
  *
  */
-public class T9Search {
+class T9Search {
 
     private final static String LOWER = "LOWER(" + Contacts.DISPLAY_NAME + ")";
     private final static String PEOPLE_QUERY = 
@@ -27,7 +27,6 @@ public class T9Search {
     private static final String[] PHONE_PROJECTION = 
             new String[] { Phone._ID, Contacts.DISPLAY_NAME, Phone.NUMBER, Phone.IS_SUPER_PRIMARY, Phone.PHOTO_THUMBNAIL_URI };
     private static final String PHONE_ID_QUERY = Phone.CONTACT_ID + " = ?";
-    private static final String PHONE_QUERY = Phone.NUMBER + " GLOB ?";
     private static final String PHONE_QUERY_SORT = Phone.IS_SUPER_PRIMARY + " desc";
 
     private Context mContext;
@@ -38,13 +37,9 @@ public class T9Search {
 
     public class T9SearchResult {
         private final int numResults;
-        private final String name;
-        private final String number;
         private final ArrayList<ContactItem> mResults;
-        public T9SearchResult (int numResults, String name, String number, ArrayList<ContactItem> results) {
+        public T9SearchResult (int numResults, ArrayList<ContactItem> results) {
             this.numResults = numResults;
-            this.name = name;
-            this.number = number;
             this.mResults = results;
         }
         public int getNumResults() {
@@ -53,40 +48,25 @@ public class T9Search {
         public ArrayList<ContactItem> getResults() {
             return mResults;
         }
-        public String getName() {
-            return name;
-        }
-        public String getNumber() {
-            return number;
-        }
     }
 
-    public static class ContactItem {
-        public String photoUri;
-        public String name;
-        public String number;
+    protected static class ContactItem {
+        String photoUri;
+        String name;
+        String number;
     }
 
     public T9SearchResult search(String number) {
-        int numResults = 0;
-        long lastId = 0;
-        String bestName = null;
-        String bestNumber = null;
-        String bestUri = null;
         T9SearchResult result = null;
         ArrayList<ContactItem> allResults = new ArrayList<ContactItem>();
 
         if(!Pattern.matches("[a-zA-Z]+", number)) { 
             Cursor c = searchPhones(number);
-            number = number.replaceAll("-","");
             try {
                 while (c.moveToNext()) {
-                    numResults++;
-                    bestName = c.getString(1);
-                    bestNumber = c.getString(2);
                     ContactItem temp = new ContactItem();
-                    temp.name = bestName;
-                    temp.number = bestNumber;
+                    temp.name = c.getString(1);
+                    temp.number = c.getString(2);
                     temp.photoUri = c.getString(4);
                     allResults.add(temp);
                 }
@@ -97,12 +77,9 @@ public class T9Search {
             Cursor c = searchContacts(number);
             try {
                 while (c.moveToNext()) {
-                    numResults++;
-                    bestName = c.getString(1);
-                    bestNumber = getBestPhone(c.getString(0));
                     ContactItem temp = new ContactItem();
-                    temp.name = bestName;
-                    temp.number = bestNumber;
+                    temp.name = c.getString(1);
+                    temp.number = getBestPhone(c.getString(0));
                     temp.photoUri = c.getString(3);
                     allResults.add(temp);
                 }
@@ -110,8 +87,8 @@ public class T9Search {
                 c.close();
             }
         }
-        if (numResults > 0) {
-            result = new T9SearchResult(numResults, bestName, bestNumber, allResults);
+        if (allResults.size() > 0) {
+            result = new T9SearchResult(allResults.size(), allResults);
         }
         return result;
     }
@@ -138,11 +115,6 @@ public class T9Search {
         Cursor c = mContext.getContentResolver().query(contactUri, PHONE_PROJECTION, null,
                 null, PHONE_QUERY_SORT);
         return c;
-        //return mContext.getContentResolver().query(Phone.CONTENT_URI,
-          //      PHONE_PROJECTION, 
-            //    PHONE_QUERY,
-              //  new String[] { number + "*" },
-                //PHONE_QUERY_SORT);
     }
 
     private Cursor searchContacts(String number) {

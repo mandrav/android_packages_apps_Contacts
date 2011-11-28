@@ -76,9 +76,8 @@ import com.android.contacts.R;
 import com.android.contacts.SpecialCharSequenceMgr;
 import com.android.contacts.activities.DialtactsActivity;
 import com.android.contacts.activities.DialtactsActivity.ViewPagerVisibilityListener;
-import com.android.contacts.activities.T9Search;
-import com.android.contacts.activities.T9Search.ContactItem;
-import com.android.contacts.activities.T9Search.T9SearchResult;
+import com.android.contacts.dialpad.T9Search.ContactItem;
+import com.android.contacts.dialpad.T9Search.T9SearchResult;
 import com.android.contacts.util.PhoneNumberFormatter;
 import com.android.internal.telephony.ITelephony;
 import com.android.phone.CallLogAsync;
@@ -295,11 +294,11 @@ public class DialpadFragment extends Fragment
         mDigits.setOnKeyListener(this);
         mDigits.setOnLongClickListener(this);
         mDigits.addTextChangedListener(this);
-        t9search = (TextView) fragmentView.findViewById(R.id.mysearch);
-        t9searchbadge = (QuickContactBadge) fragmentView.findViewById(R.id.quick_contact_photo);
+        t9search = (TextView) fragmentView.findViewById(R.id.t9search);
+        t9searchbadge = (QuickContactBadge) fragmentView.findViewById(R.id.t9badge);
         mT9Search = new T9Search(getActivity());
-        t9list = (ListView)fragmentView.findViewById(R.id.listy);
-        t9toggle=(Button)fragmentView.findViewById(R.id.toggle);
+        t9list = (ListView)fragmentView.findViewById(R.id.t9list);
+        t9toggle=(Button)fragmentView.findViewById(R.id.t9toggle);
         t9toggle.setOnClickListener(this);
 
         PhoneNumberFormatter.setPhoneNumberFormattingTextWatcher(getActivity(), mDigits);
