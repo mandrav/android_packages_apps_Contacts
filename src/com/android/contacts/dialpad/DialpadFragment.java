@@ -34,6 +34,8 @@ import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemProperties;
@@ -63,9 +65,10 @@ import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.QuickContactBadge;
@@ -130,11 +133,14 @@ public class DialpadFragment extends Fragment
     private DialpadChooserAdapter mDialpadChooserAdapter;
 
     private T9Search mT9Search;
-    private Button t9toggle;
+    private ImageButton t9toggle;
     private ListView t9list;
     private TextView t9search;
+    private LinearLayout t9bar;
     private QuickContactBadge t9searchbadge;
     private boolean t9enabled = false;
+    private T9Adapter t9adapter;
+    private T9Handler t9handle = new T9Handler();
 
     /**
      * Regular expression prohibiting manual phone call. Can be empty, which means "no rule".
@@ -247,36 +253,44 @@ public class DialpadFragment extends Fragment
                 R.string.config_prohibited_phone_number_regexp);
     }
 
-    private class T9Adapter extends ArrayAdapter<ContactItem> {
+    private static class T9Adapter extends ArrayAdapter<ContactItem> {
 
         private ArrayList<ContactItem> items;
+        private LayoutInflater menuInflate;
 
-        public T9Adapter(Context context, int textViewResourceId, ArrayList<ContactItem> items) {
+        public T9Adapter(Context context, int textViewResourceId, ArrayList<ContactItem> items, LayoutInflater menuInflate) {
             super(context, textViewResourceId, items);
             this.items = items;
+            this.menuInflate = menuInflate;
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            View v = convertView;
-            if (v == null) {
-                LayoutInflater vi = (LayoutInflater)getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                v = vi.inflate(R.layout.row, null);
+            ViewHolder holder;
+
+            if (convertView == null) {
+                convertView = menuInflate.inflate(R.layout.row, null);
+                holder = new ViewHolder();
+                holder.text = (TextView) convertView.findViewById(R.id.rowText);
+                holder.icon = (QuickContactBadge) convertView.findViewById(R.id.rowBadge);
+                convertView.setTag(holder);
+            } else {
+                holder = (ViewHolder) convertView.getTag();
             }
-            ContactItem o = items.get(position);
-            if (o != null) {
-                TextView tt = (TextView) v.findViewById(R.id.rowText);
-                QuickContactBadge bt = (QuickContactBadge) v.findViewById(R.id.rowBadge);
-                if (tt != null)
-                    tt.setText("Name: "+o.name);
-                bt.assignContactFromPhone(o.number, true);
-                if(bt != null && o.photoUri!=null) {
-                    bt.setImageURI(Uri.parse(o.photoUri));
-                }else {
-                    bt.setImageResource(R.drawable.ic_contact_picture_180_holo_dark);
-                }
+            o = items.get(position);
+            holder.text.setText(o.name);
+            if (o.photoUri!=null){
+                holder.icon.setImageURI(Uri.parse(o.photoUri));
+            }else {
+                holder.icon.setImageResource(R.drawable.ic_contact_picture_180_holo_dark);
             }
-            return v;
+            holder.icon.assignContactFromPhone(o.number, true);
+            return convertView;
+        }
+        static ContactItem o;
+        static class ViewHolder {
+            TextView text;
+            QuickContactBadge icon;
         }
     }
 
@@ -286,7 +300,7 @@ public class DialpadFragment extends Fragment
 
         // Load up the resources for the text field.
         Resources r = getResources();
-
+        t9bar = (LinearLayout)fragmentView.findViewById(R.id.t9topbar);
         mDigitsContainer = fragmentView.findViewById(R.id.digits_container);
         mDigits = (EditText) fragmentView.findViewById(R.id.digits);
         mDigits.setKeyListener(DialerKeyListener.getInstance());
@@ -298,7 +312,8 @@ public class DialpadFragment extends Fragment
         t9searchbadge = (QuickContactBadge) fragmentView.findViewById(R.id.t9badge);
         mT9Search = new T9Search(getActivity());
         t9list = (ListView)fragmentView.findViewById(R.id.t9list);
-        t9toggle=(Button)fragmentView.findViewById(R.id.t9toggle);
+        t9list.setOnItemClickListener(this);
+        t9toggle=(ImageButton)fragmentView.findViewById(R.id.t9toggle);
         t9toggle.setOnClickListener(this);
 
         PhoneNumberFormatter.setPhoneNumberFormattingTextWatcher(getActivity(), mDigits);
@@ -700,26 +715,58 @@ public class DialpadFragment extends Fragment
         return intent;
     }
 
+    class T9Handler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            T9SearchResult result = (T9SearchResult) msg.obj;
+            if (result != null && msg.arg1!= 1 && result.getNumResults() > 0) {
+                t9search.setText(result.getTopName() + " : " + result.getTopNumber());
+                t9searchbadge.assignContactFromPhone(result.getTopNumber(), false);
+                if(result.getResults().get(0).photoUri!=null) {
+                    t9searchbadge.setImageURI(Uri.parse(result.getResults().get(0).photoUri));
+                }else {
+                    t9searchbadge.setImageResource(R.drawable.ic_contact_picture_180_holo_dark);
+                }
+                if (result.getNumResults()>1) {
+                    t9toggle.setVisibility(View.VISIBLE);
+                }else{
+                    t9toggle.setVisibility(View.INVISIBLE);
+                }
+                if (t9adapter == null){
+                    t9adapter = new T9Adapter(getActivity(), 0, result.getResults(),getActivity().getLayoutInflater());
+                }else{
+                    t9adapter.clear();
+                    t9adapter.setNotifyOnChange(true);
+                    t9adapter.addAll(result.getResults());
+                }
+                if (t9list.getAdapter()==null)
+                    t9list.setAdapter(t9adapter);
+                t9bar.setVisibility(View.VISIBLE);
+            } else{
+                t9bar.setVisibility(View.GONE);
+            }
+        }
+    }
+
     private void keyPressed(int keyCode) {
         mHaptic.vibrate();
         KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
         mDigits.onKeyDown(keyCode, event);
-
-        T9SearchResult result = mT9Search.search(mDigits.getText().toString());
-        if (result != null && result.getNumResults() > 0) {
-            t9search.setText(result.getTopName() + " : " + result.getTopNumber());
-            t9searchbadge.assignContactFromPhone(result.getTopNumber(), false);
-            if(result.getResults().get(0).photoUri!=null) {
-                t9searchbadge.setImageURI(Uri.parse(result.getResults().get(0).photoUri));
-            }else {
-                t9searchbadge.setImageResource(R.drawable.ic_contact_picture_180_holo_dark);
-            }
-            T9Adapter abc = new T9Adapter(getActivity(), 0, result.getResults());
-            t9list.setAdapter(abc);
-        }
-
         // If the cursor is at the end of the text we hide it.
         final int length = mDigits.length();
+        Thread tmpThread = new Thread(new Runnable(){@Override
+            public void run() {
+            Message tmpMsg = new Message();
+            if (length>0) {
+                T9SearchResult result = mT9Search.search(mDigits.getText().toString());
+                tmpMsg.obj = result;
+            }else{
+                tmpMsg.arg1=1;
+            }
+            t9handle.sendMessage(tmpMsg);
+        }});
+        tmpThread.setPriority(Thread.MAX_PRIORITY);
+        tmpThread.start();
         if (length == mDigits.getSelectionStart() && length == mDigits.getSelectionEnd()) {
             mDigits.setCursorVisible(false);
         }
@@ -836,6 +883,9 @@ public class DialpadFragment extends Fragment
                     t9animation = AnimationUtils.loadAnimation(getActivity(), R.anim.translateout);
                 }
                 mAdditionalButtonsRow.startAnimation(t9animation);
+                if (t9enabled){
+                    t9list.setVisibility(t9enabled ? View.INVISIBLE : View.VISIBLE);
+                }
                 mDialpad.startAnimation(t9animation);
                 t9animation.setAnimationListener(new Animation.AnimationListener() {
                     @Override
@@ -1251,6 +1301,11 @@ public class DialpadFragment extends Fragment
      * Handle clicks from the dialpad chooser.
      */
     public void onItemClick(AdapterView parent, View v, int position, long id) {
+        if (parent == t9list){
+            mDigits.setText(t9adapter.getItem(position).number);
+            dialButtonPressed();
+            return;
+        }
         DialpadChooserAdapter.ChoiceItem item =
                 (DialpadChooserAdapter.ChoiceItem) parent.getItemAtPosition(position);
         int itemId = item.id;

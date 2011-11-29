@@ -36,20 +36,24 @@ class T9Search {
     }
 
     public class T9SearchResult {
-        private final int numResults;
         private final ArrayList<ContactItem> mResults;
-        public T9SearchResult (int numResults, ArrayList<ContactItem> results) {
-            this.numResults = numResults;
+        private ContactItem mTopContact;
+        public T9SearchResult (ArrayList<ContactItem> results) {
+            mTopContact = new ContactItem();
+            mTopContact.name = results.get(0).name;
+            mTopContact.number = results.get(0).number;
+            mTopContact.photoUri = results.get(0).photoUri;
+            results.remove(0);
             this.mResults = results;
         }
         public int getNumResults() {
-            return numResults;
+            return mResults.size();
         }
         public String getTopName() {
-            return mResults.get(0).name;
+            return mTopContact.name;
         }
         public String getTopNumber() {
-            return mResults.get(0).number;
+            return mTopContact.number;
         }
         public ArrayList<ContactItem> getResults() {
             return mResults;
@@ -66,35 +70,36 @@ class T9Search {
         T9SearchResult result = null;
         ArrayList<ContactItem> allResults = new ArrayList<ContactItem>();
 
-        if(!Pattern.matches("[a-zA-Z]+", number)) { 
-            Cursor c = searchPhones(number);
-            try {
-                while (c.moveToNext()) {
-                    ContactItem temp = new ContactItem();
-                    temp.name = c.getString(1);
-                    temp.number = c.getString(2);
-                    temp.photoUri = c.getString(4);
-                    allResults.add(temp);
-                }
-            } finally {
-                c.close();
+        Cursor c = searchPhones(number);
+        try {
+            while (c.moveToNext()) {
+                ContactItem temp = new ContactItem();
+                temp.name = c.getString(1);
+                temp.number = c.getString(2);
+                temp.photoUri = c.getString(4);
+                allResults.add(temp);
             }
-        }else{
-            Cursor c = searchContacts(number);
-            try {
-                while (c.moveToNext()) {
-                    ContactItem temp = new ContactItem();
-                    temp.name = c.getString(1);
-                    temp.number = getBestPhone(c.getString(0));
-                    temp.photoUri = c.getString(3);
-                    allResults.add(temp);
-                }
-            } finally {
-                c.close();
-            }
+        } finally {
+            c.close();
         }
+
+        c = searchContacts(number);
+        try {
+            while (c.moveToNext()) {
+                ContactItem temp = new ContactItem();
+                temp.name = c.getString(1);
+                temp.number = getBestPhone(c.getString(0));
+                temp.photoUri = c.getString(3);
+                if (!allResults.contains(temp)){
+                    allResults.add(temp);
+                }
+            }
+        } finally {
+            c.close();
+        }
+
         if (allResults.size() > 0) {
-            result = new T9SearchResult(allResults.size(), allResults);
+            result = new T9SearchResult(allResults);
         }
         return result;
     }

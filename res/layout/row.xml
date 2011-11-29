@@ -5,14 +5,17 @@
 
     <QuickContactBadge
         android:id="@+id/rowBadge"
-        android:layout_width="@dimen/call_log_list_contact_photo_size"
-        android:layout_height="@dimen/call_log_list_contact_photo_size"
-        android:focusable="true" />
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:focusable="false" />
 
     <TextView
         android:id="@+id/rowText"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:paddingLeft="5dp"
+        android:gravity="center_vertical"
         android:layout_weight="0.56"/>
 
 </LinearLayout>
