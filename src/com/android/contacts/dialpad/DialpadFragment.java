@@ -271,14 +271,16 @@ public class DialpadFragment extends Fragment
             if (convertView == null) {
                 convertView = menuInflate.inflate(R.layout.row, null);
                 holder = new ViewHolder();
-                holder.text = (TextView) convertView.findViewById(R.id.rowText);
+                holder.name = (TextView) convertView.findViewById(R.id.rowName);
+                holder.number = (TextView) convertView.findViewById(R.id.rowNumber);
                 holder.icon = (QuickContactBadge) convertView.findViewById(R.id.rowBadge);
                 convertView.setTag(holder);
             } else {
                 holder = (ViewHolder) convertView.getTag();
             }
             o = items.get(position);
-            holder.text.setText(o.name);
+            holder.name.setText(o.name);
+            holder.number.setText(o.number);
             if (o.photoUri!=null){
                 holder.icon.setImageURI(Uri.parse(o.photoUri));
             }else {
@@ -289,7 +291,7 @@ public class DialpadFragment extends Fragment
         }
         static ContactItem o;
         static class ViewHolder {
-            TextView text;
+            TextView name,number;
             QuickContactBadge icon;
         }
     }
