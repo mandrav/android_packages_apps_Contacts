@@ -47,13 +47,16 @@ class T9Search {
             this.mResults = results;
         }
         public int getNumResults() {
-            return mResults.size();
+            return mResults.size()+1;
         }
         public String getTopName() {
             return mTopContact.name;
         }
         public String getTopNumber() {
             return mTopContact.number;
+        }
+        public String getTopPhoto() {
+            return mTopContact.photoUri;
         }
         public ArrayList<ContactItem> getResults() {
             return mResults;
