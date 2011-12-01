@@ -26,6 +26,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -139,6 +140,7 @@ public class DialpadFragment extends Fragment
     private LinearLayout t9bar;
     private QuickContactBadge t9searchbadge;
     private boolean t9enabled = false;
+    private boolean mPortraitOrientation = true;
     private T9Adapter t9adapter;
     private T9Handler t9handle = new T9Handler();
 
@@ -314,9 +316,13 @@ public class DialpadFragment extends Fragment
         t9searchbadge = (QuickContactBadge) fragmentView.findViewById(R.id.t9badge);
         mT9Search = new T9Search(getActivity());
         t9list = (ListView)fragmentView.findViewById(R.id.t9list);
-        t9list.setOnItemClickListener(this);
+        if (t9list!= null){
+            t9list.setOnItemClickListener(this);
+        }
         t9toggle=(ImageButton)fragmentView.findViewById(R.id.t9toggle);
-        t9toggle.setOnClickListener(this);
+        if (t9toggle!=null){
+            t9toggle.setOnClickListener(this);
+        }
 
         PhoneNumberFormatter.setPhoneNumberFormattingTextWatcher(getActivity(), mDigits);
 
@@ -541,6 +547,7 @@ public class DialpadFragment extends Fragment
     public void onResume() {
         super.onResume();
 
+        mPortraitOrientation = (getResources().getConfiguration().orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         // Query the last dialed number. Do it first because hitting
         // the DB is 'slow'. This call is asynchronous.
         queryLastOutgoingCall();
@@ -717,6 +724,13 @@ public class DialpadFragment extends Fragment
         return intent;
     }
 
+    private void hideT9(){
+        t9enabled=false;
+        t9list.setVisibility(View.GONE);
+        mAdditionalButtonsRow.setVisibility(View.VISIBLE);
+        mDialpad.setVisibility(View.VISIBLE);
+    }
+
     class T9Handler extends Handler {
         @Override
         public void handleMessage(Message msg) {
@@ -756,19 +770,21 @@ public class DialpadFragment extends Fragment
         mDigits.onKeyDown(keyCode, event);
         // If the cursor is at the end of the text we hide it.
         final int length = mDigits.length();
-        Thread tmpThread = new Thread(new Runnable(){@Override
-            public void run() {
-            Message tmpMsg = new Message();
-            if (length>0) {
-                T9SearchResult result = mT9Search.search(mDigits.getText().toString());
-                tmpMsg.obj = result;
-            }else{
-                tmpMsg.arg1=1;
-            }
-            t9handle.sendMessage(tmpMsg);
-        }});
-        tmpThread.setPriority(Thread.MAX_PRIORITY);
-        tmpThread.start();
+        if (mPortraitOrientation) {
+            Thread tmpThread = new Thread(new Runnable(){@Override
+                public void run() {
+                Message tmpMsg = new Message();
+                if (length>0) {
+                    T9SearchResult result = mT9Search.search(mDigits.getText().toString());
+                    tmpMsg.obj = result;
+                }else{
+                    tmpMsg.arg1=1;
+                }
+                t9handle.sendMessage(tmpMsg);
+            }});
+            tmpThread.setPriority(Thread.MAX_PRIORITY);
+            tmpThread.start();
+        }
         if (length == mDigits.getSelectionStart() && length == mDigits.getSelectionEnd()) {
             mDigits.setCursorVisible(false);
         }
