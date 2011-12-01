@@ -739,7 +739,7 @@ public class DialpadFragment extends Fragment
                 t9search.setText(result.getTopName() + " : " + result.getTopNumber());
                 t9searchbadge.assignContactFromPhone(result.getTopNumber(), false);
                 if(result.getTopPhoto()!=null) {
-                    t9searchbadge.setImageURI(Uri.parse(result.getResults().get(0).photoUri));
+                    t9searchbadge.setImageURI(Uri.parse(result.getTopPhoto()));
                 }else {
                     t9searchbadge.setImageResource(R.drawable.ic_contact_picture_180_holo_dark);
                 }
