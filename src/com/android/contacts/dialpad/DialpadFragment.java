@@ -750,13 +750,12 @@ public class DialpadFragment extends Fragment
                 }
                 if (t9adapter == null){
                     t9adapter = new T9Adapter(getActivity(), 0, result.getResults(),getActivity().getLayoutInflater());
+                    t9adapter.setNotifyOnChange(true);
+                    t9list.setAdapter(t9adapter);
                 }else{
                     t9adapter.clear();
-                    t9adapter.setNotifyOnChange(true);
                     t9adapter.addAll(result.getResults());
                 }
-                if (t9list.getAdapter()==null)
-                    t9list.setAdapter(t9adapter);
                 t9bar.setVisibility(View.VISIBLE);
             } else{
                 t9bar.setVisibility(View.GONE);
