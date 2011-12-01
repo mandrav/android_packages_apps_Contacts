@@ -132,6 +132,7 @@ class T9Search {
     }
 
     private Cursor searchContacts(String number) {
+        number = number.replaceAll("-", "");
         String matcher = buildT9ContactQuery(number);
         return mContext.getContentResolver().query(Contacts.CONTENT_URI, 
                 PEOPLE_PROJECTION,
