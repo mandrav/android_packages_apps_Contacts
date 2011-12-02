@@ -20,7 +20,7 @@ class T9Search {
 
     private final static String LOWER = "LOWER(" + Contacts.DISPLAY_NAME + ")";
     private final static String PEOPLE_QUERY = 
-            "(" + LOWER + " GLOB ? OR " + LOWER + " GLOB ?) AND " + Contacts.HAS_PHONE_NUMBER + " = 1";
+            "(" + LOWER + " GLOB ?) AND " + Contacts.HAS_PHONE_NUMBER + " = 1";
     private static final String[] PEOPLE_PROJECTION = 
             new String[] { Contacts._ID, Contacts.DISPLAY_NAME, Contacts.LOOKUP_KEY, Contacts.PHOTO_THUMBNAIL_URI};
     private static final String PEOPLE_SORT = Contacts.DISPLAY_NAME + " COLLATE LOCALIZED ASC"; 
@@ -71,6 +71,7 @@ class T9Search {
     }
 
     public T9SearchResult search(String number) {
+        number=number.replaceAll( "[^\\d]", "" );
         T9SearchResult result = null;
         ArrayList<ContactItem> allResults = new ArrayList<ContactItem>();
 
@@ -126,7 +127,6 @@ class T9Search {
     }
 
     private Cursor searchPhones(String number) {
-        number=number.replaceAll( "[^\\d]", "" );
         return mContext.getContentResolver().query(Phone.CONTENT_URI,
                 PHONE_PROJECTION,
                 PHONE_QUERY,
@@ -139,7 +139,7 @@ class T9Search {
         return mContext.getContentResolver().query(Contacts.CONTENT_URI, 
                 PEOPLE_PROJECTION,
                 PEOPLE_QUERY, 
-                new String[] { matcher + "*", "*[ ]" + matcher + "*" }, 
+                new String[] { "*" + matcher + "*" },
                 PEOPLE_SORT);
     }
 
@@ -148,9 +148,7 @@ class T9Search {
         if (number != null) {
             for (int i = 0; i < number.length(); i++) {
                 char key = number.charAt(i);
-                if (! "-".equals(key)) {
-                    sb.append(numberToRegexPart(key));
-                }
+                sb.append(numberToRegexPart(key));
             }
         }
         return sb.toString();
