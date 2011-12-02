@@ -27,6 +27,7 @@ class T9Search {
     private static final String[] PHONE_PROJECTION = 
             new String[] { Phone._ID, Contacts.DISPLAY_NAME, Phone.NUMBER, Phone.IS_SUPER_PRIMARY, Phone.PHOTO_THUMBNAIL_URI };
     private static final String PHONE_ID_QUERY = Phone.CONTACT_ID + " = ?";
+    private static final String PHONE_QUERY = Phone.NORMALIZED_NUMBER + " GLOB ?";
     private static final String PHONE_QUERY_SORT = Phone.IS_SUPER_PRIMARY + " desc";
 
     private Context mContext;
@@ -125,14 +126,15 @@ class T9Search {
     }
 
     private Cursor searchPhones(String number) {
-        Uri contactUri = Uri.withAppendedPath(Phone.CONTENT_FILTER_URI, Uri.encode(number));
-        Cursor c = mContext.getContentResolver().query(contactUri, PHONE_PROJECTION, null,
-                null, PHONE_QUERY_SORT);
-        return c;
+        number=number.replaceAll( "[^\\d]", "" );
+        return mContext.getContentResolver().query(Phone.CONTENT_URI,
+                PHONE_PROJECTION,
+                PHONE_QUERY,
+                new String[] {"*" + number + "*"},
+                PHONE_QUERY_SORT);
     }
 
     private Cursor searchContacts(String number) {
-        number = number.replaceAll("-", "");
         String matcher = buildT9ContactQuery(number);
         return mContext.getContentResolver().query(Contacts.CONTENT_URI, 
                 PEOPLE_PROJECTION,
