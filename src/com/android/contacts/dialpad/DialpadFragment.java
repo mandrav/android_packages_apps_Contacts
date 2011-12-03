@@ -137,7 +137,6 @@ public class DialpadFragment extends Fragment
     private ImageButton t9toggle;
     private ListView t9list;
     private TextView t9search;
-    private LinearLayout t9bar;
     private QuickContactBadge t9searchbadge;
     private boolean t9enabled = false;
     private boolean mPortraitOrientation = true;
@@ -304,7 +303,6 @@ public class DialpadFragment extends Fragment
 
         // Load up the resources for the text field.
         Resources r = getResources();
-        t9bar = (LinearLayout)fragmentView.findViewById(R.id.t9topbar);
         mDigitsContainer = fragmentView.findViewById(R.id.digits_container);
         mDigits = (EditText) fragmentView.findViewById(R.id.digits);
         mDigits.setKeyListener(DialerKeyListener.getInstance());
@@ -756,9 +754,13 @@ public class DialpadFragment extends Fragment
                     t9adapter.clear();
                     t9adapter.addAll(result.getResults());
                 }
-                t9bar.setVisibility(View.VISIBLE);
+                t9searchbadge.setVisibility(View.VISIBLE);
+                t9search.setVisibility(View.VISIBLE);
+                t9toggle.setVisibility(View.VISIBLE);
             } else{
-                t9bar.setVisibility(View.GONE);
+                t9searchbadge.setVisibility(View.INVISIBLE);
+                t9search.setVisibility(View.INVISIBLE);
+                t9toggle.setVisibility(View.INVISIBLE);
             }
         }
     }

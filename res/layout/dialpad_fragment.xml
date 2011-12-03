@@ -28,7 +28,7 @@
         android:id="@+id/digits_container"
         android:layout_width="match_parent"
         android:layout_height="0px"
-        android:layout_weight="0.150"
+        android:layout_weight="0.1"
         android:layout_marginTop="@dimen/dialpad_vertical_margin"
         android:gravity="center"
         android:background="@drawable/dialpad_background" >
@@ -62,10 +62,8 @@
         android:layout_height="0px"
         android:background="@drawable/dialpad_background"
         android:layout_gravity="center"
-        android:id="@+id/t9topbar"
-        android:visibility="gone"
         android:gravity="center"
-        android:layout_weight="0.150">
+        android:layout_weight="0.1">
         <QuickContactBadge
             android:id="@+id/t9badge"
             android:layout_width="40dp"
