@@ -762,7 +762,6 @@ public class DialpadFragment extends Fragment
                     t9list.setAdapter(t9adapter);
                 t9searchbadge.setVisibility(View.VISIBLE);
                 t9search.setVisibility(View.VISIBLE);
-                t9toggle.setVisibility(View.VISIBLE);
             } else{
                 t9searchbadge.setVisibility(View.INVISIBLE);
                 t9search.setVisibility(View.INVISIBLE);
