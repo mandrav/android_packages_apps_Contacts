@@ -283,7 +283,7 @@ public class DialpadFragment extends Fragment
             holder.name.setText(o.name);
             holder.number.setText(o.number);
             if (o.photoUri!=null){
-                holder.icon.setImageURI(Uri.parse(o.photoUri));
+                holder.icon.setImageBitmap(o.photoUri);
             }else {
                 holder.icon.setImageResource(R.drawable.ic_contact_picture_180_holo_dark);
             }
@@ -737,7 +737,7 @@ public class DialpadFragment extends Fragment
                 t9search.setText(result.getTopName() + " : " + result.getTopNumber());
                 t9searchbadge.assignContactFromPhone(result.getTopNumber(), false);
                 if(result.getTopPhoto()!=null) {
-                    t9searchbadge.setImageURI(Uri.parse(result.getTopPhoto()));
+                    t9searchbadge.setImageBitmap(result.getTopPhoto());
                 }else {
                     t9searchbadge.setImageResource(R.drawable.ic_contact_picture_180_holo_dark);
                 }

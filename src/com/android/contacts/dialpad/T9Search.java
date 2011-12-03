@@ -3,14 +3,17 @@
  */
 package com.android.contacts.dialpad;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.regex.Pattern;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Contacts;
+import android.provider.MediaStore.Images.Media;
 
 /**
  * @author shade,Danesh
@@ -56,7 +59,7 @@ class T9Search {
         public String getTopNumber() {
             return mTopContact.number;
         }
-        public String getTopPhoto() {
+        public Bitmap getTopPhoto() {
             return mTopContact.photoUri;
         }
         public ArrayList<ContactItem> getResults() {
@@ -65,7 +68,7 @@ class T9Search {
     }
 
     protected static class ContactItem {
-        String photoUri;
+        Bitmap photoUri;
         String name;
         String number;
     }
@@ -81,9 +84,14 @@ class T9Search {
                 ContactItem temp = new ContactItem();
                 temp.name = c.getString(1);
                 temp.number = c.getString(2);
-                temp.photoUri = c.getString(4);
+                if (c.getString(4)!=null)
+                temp.photoUri = Media.getBitmap(mContext.getContentResolver(), Uri.parse(c.getString(4)));
                 allResults.add(temp);
             }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         } finally {
             c.close();
         }
@@ -94,11 +102,16 @@ class T9Search {
                 ContactItem temp = new ContactItem();
                 temp.name = c.getString(1);
                 temp.number = getBestPhone(c.getString(0));
-                temp.photoUri = c.getString(3);
+                if (c.getString(3)!=null)
+                temp.photoUri = Media.getBitmap(mContext.getContentResolver(), Uri.parse(c.getString(3)));
                 if (!allResults.contains(temp)){
                     allResults.add(temp);
                 }
             }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         } finally {
             c.close();
         }
