@@ -614,7 +614,7 @@ public class DialpadFragment extends Fragment
     @Override
     public void onPause() {
         super.onPause();
-
+        hideT9();
         // Stop listening for phone state changes.
         TelephonyManager telephonyManager =
                 (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
