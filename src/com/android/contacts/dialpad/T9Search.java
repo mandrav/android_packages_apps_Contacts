@@ -27,7 +27,7 @@ class T9Search {
     private static final String[] PHONE_PROJECTION = 
             new String[] { Phone._ID, Contacts.DISPLAY_NAME, Phone.NUMBER, Phone.IS_SUPER_PRIMARY, Phone.PHOTO_THUMBNAIL_URI };
     private static final String PHONE_ID_QUERY = Phone.CONTACT_ID + " = ?";
-    private static final String PHONE_QUERY = Phone.NORMALIZED_NUMBER + " GLOB ?";
+    private static final String PHONE_QUERY = Phone.NORMALIZED_NUMBER + " GLOB ? OR " + Phone.NUMBER + " GLOB ?";
     private static final String PHONE_QUERY_SORT = Phone.IS_SUPER_PRIMARY + " desc";
 
     private Context mContext;
@@ -130,7 +130,7 @@ class T9Search {
         return mContext.getContentResolver().query(Phone.CONTENT_URI,
                 PHONE_PROJECTION,
                 PHONE_QUERY,
-                new String[] {"*" + number + "*"},
+                new String[] {"*" + number + "*","*" + number + "*"},
                 PHONE_QUERY_SORT);
     }
 
