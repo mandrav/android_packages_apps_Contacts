@@ -546,6 +546,8 @@ public class DialpadFragment extends Fragment
         super.onResume();
 
         mPortraitOrientation = (getResources().getConfiguration().orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        if (mPortraitOrientation)
+            searchContacts();
         // Query the last dialed number. Do it first because hitting
         // the DB is 'slow'. This call is asynchronous.
         queryLastOutgoingCall();
@@ -614,7 +616,9 @@ public class DialpadFragment extends Fragment
     @Override
     public void onPause() {
         super.onPause();
-        hideT9();
+        if (mPortraitOrientation) {
+            hideT9();
+        }
         // Stop listening for phone state changes.
         TelephonyManager telephonyManager =
                 (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
@@ -733,7 +737,7 @@ public class DialpadFragment extends Fragment
         @Override
         public void handleMessage(Message msg) {
             T9SearchResult result = (T9SearchResult) msg.obj;
-            if (result != null && msg.arg1!= 1 && result.getNumResults() > 0) {
+            if (result != null && result.getNumResults() > 0) {
                 t9search.setText(result.getTopName() + " : " + result.getTopNumber());
                 t9searchbadge.assignContactFromPhone(result.getTopNumber(), false);
                 if(result.getTopPhoto()!=null) {
@@ -754,6 +758,8 @@ public class DialpadFragment extends Fragment
                     t9adapter.clear();
                     t9adapter.addAll(result.getResults());
                 }
+                if (t9list.getAdapter()==null)
+                    t9list.setAdapter(t9adapter);
                 t9searchbadge.setVisibility(View.VISIBLE);
                 t9search.setVisibility(View.VISIBLE);
                 t9toggle.setVisibility(View.VISIBLE);
@@ -765,27 +771,33 @@ public class DialpadFragment extends Fragment
         }
     }
 
+    private void searchContacts() {
+        final int length = mDigits.length();
+        if (!mPortraitOrientation)
+            return;
+        if (length > 0) {
+            Thread tmpThread = new Thread(new Runnable(){
+                @Override
+                public void run() {
+                Message tmpMsg = new Message();
+                T9SearchResult result = mT9Search.search(mDigits.getText().toString());
+                tmpMsg.obj = result;
+                t9handle.sendMessage(tmpMsg);
+            }});
+            tmpThread.setPriority(Thread.MAX_PRIORITY);
+            tmpThread.start();
+        } else {
+            t9handle.sendEmptyMessage(0);
+        }
+    }
+
     private void keyPressed(int keyCode) {
         mHaptic.vibrate();
         KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
         mDigits.onKeyDown(keyCode, event);
         // If the cursor is at the end of the text we hide it.
         final int length = mDigits.length();
-        if (mPortraitOrientation) {
-            Thread tmpThread = new Thread(new Runnable(){@Override
-                public void run() {
-                Message tmpMsg = new Message();
-                if (length>0) {
-                    T9SearchResult result = mT9Search.search(mDigits.getText().toString());
-                    tmpMsg.obj = result;
-                }else{
-                    tmpMsg.arg1=1;
-                }
-                t9handle.sendMessage(tmpMsg);
-            }});
-            tmpThread.setPriority(Thread.MAX_PRIORITY);
-            tmpThread.start();
-        }
+        searchContacts();
         if (length == mDigits.getSelectionStart() && length == mDigits.getSelectionEnd()) {
             mDigits.setCursorVisible(false);
         }
@@ -945,6 +957,7 @@ public class DialpadFragment extends Fragment
         switch (id) {
             case R.id.deleteButton: {
                 digits.clear();
+                searchContacts();
                 // TODO: The framework forgets to clear the pressed
                 // status of disabled button. Until this is fixed,
                 // clear manually the pressed status. b/2133127
@@ -1179,7 +1192,7 @@ public class DialpadFragment extends Fragment
      */
     private void showDialpadChooser(boolean enabled) {
         // Check if onCreateView() is already called by checking one of View objects.
-        if (!isLayoutReady() || t9enabled) {
+        if (!isLayoutReady()) {
             return;
         }
 
