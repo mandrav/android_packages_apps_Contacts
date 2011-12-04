@@ -763,6 +763,7 @@ public class DialpadFragment extends Fragment
             return;
         }
         if (t9flipper.getCurrentView()==t9list){
+            t9toggle.setChecked(false);
             t9flipper.showNext();
         }
     }
