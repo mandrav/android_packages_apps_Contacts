@@ -803,6 +803,7 @@ public class DialpadFragment extends Fragment
                 t9searchbadge.setVisibility(View.INVISIBLE);
                 t9search.setVisibility(View.INVISIBLE);
                 t9toggle.setVisibility(View.INVISIBLE);
+                toggleT9();
             }
         }
     }
