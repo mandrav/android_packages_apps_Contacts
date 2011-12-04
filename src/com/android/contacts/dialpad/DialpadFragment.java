@@ -784,7 +784,7 @@ public class DialpadFragment extends Fragment
                 if (result.getNumResults()>1) {
                     t9toggle.setVisibility(View.VISIBLE);
                 }else{
-                    t9toggle.setVisibility(View.INVISIBLE);
+                    t9toggle.setVisibility(View.GONE);
                 }
                 if (t9adapter == null){
                     t9adapter = new T9Adapter(getActivity(), 0, result.getResults(),getActivity().getLayoutInflater());
