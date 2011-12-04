@@ -80,11 +80,13 @@
             android:gravity="center"
             android:visibility="invisible"
             android:layout_width="0dp"
+            android:clickable="true"
+            android:background="@drawable/t9search_state"
             android:layout_height="match_parent" />
         <ToggleButton
             android:id="@+id/t9toggle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:visibility="invisible"
             android:scaleType="centerInside"
             android:layout_marginRight="5dp"

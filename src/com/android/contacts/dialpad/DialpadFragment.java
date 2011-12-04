@@ -316,6 +316,9 @@ public class DialpadFragment extends Fragment
         mDigits.setOnLongClickListener(this);
         mDigits.addTextChangedListener(this);
         t9search = (TextView) fragmentView.findViewById(R.id.t9search);
+        if (t9search!=null){
+            t9search.setOnClickListener(this);
+        }
         t9searchbadge = (QuickContactBadge) fragmentView.findViewById(R.id.t9badge);
         mT9Search = new T9Search(getActivity());
         t9list = (ListView)fragmentView.findViewById(R.id.t9list);
@@ -771,6 +774,7 @@ public class DialpadFragment extends Fragment
             if (result != null && result.getNumResults() > 0) {
                 t9search.setText(result.getTopName() + " : " + result.getTopNumber());
                 t9searchbadge.assignContactFromPhone(result.getTopNumber(), true);
+                t9searchbadge.setTag(result.getTopNumber());
                 if(result.getTopPhoto()!=null) {
                     t9searchbadge.setImageBitmap(result.getTopPhoto());
                 }else {
@@ -950,6 +954,11 @@ public class DialpadFragment extends Fragment
                 dialpadSwitch.setInterpolator(new DecelerateInterpolator());
                 t9flipper.setInAnimation(dialpadSwitch);
                 t9flipper.showNext();
+                return;
+            }
+            case R.id.t9search: {
+                mDigits.setText(t9searchbadge.getTag().toString());
+                mDigits.setSelection(mDigits.getText().length());
                 return;
             }
         }
@@ -1352,6 +1361,7 @@ public class DialpadFragment extends Fragment
     public void onItemClick(AdapterView parent, View v, int position, long id) {
         if (parent == t9list){
             mDigits.setText(t9adapter.getItem(position).number);
+            mDigits.setSelection(mDigits.getText().length());
             return;
         }
         DialpadChooserAdapter.ChoiceItem item =
