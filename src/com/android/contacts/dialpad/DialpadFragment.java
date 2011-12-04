@@ -40,6 +40,7 @@ import android.os.Message;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemProperties;
+import android.preference.PreferenceManager;
 import android.provider.Contacts.Intents.Insert;
 import android.provider.Contacts.People;
 import android.provider.Contacts.Phones;
@@ -71,6 +72,8 @@ import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.QuickContactBadge;
@@ -141,7 +144,7 @@ public class DialpadFragment extends Fragment
     private ListView t9list;
     private TextView t9search;
     private QuickContactBadge t9searchbadge;
-    private boolean mPortraitOrientation = true;
+    private boolean mPortraitOrientation;
     private T9Adapter t9adapter;
     private T9Handler t9handle = new T9Handler();
     private ViewSwitcher t9flipper;
@@ -241,7 +244,7 @@ public class DialpadFragment extends Fragment
     @Override
     public void onCreate(Bundle state) {
         super.onCreate(state);
-
+        mPortraitOrientation = (getResources().getConfiguration().orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         mCurrentCountryIso = ContactsUtils.getCurrentCountryIso(getActivity());
 
         try {
@@ -326,6 +329,7 @@ public class DialpadFragment extends Fragment
             t9toggle.setOnClickListener(this);
         }
         t9flipper = (ViewSwitcher)fragmentView.findViewById(R.id.t9flipper);
+        hideT9(fragmentView);
         PhoneNumberFormatter.setPhoneNumberFormattingTextWatcher(getActivity(), mDigits);
 
         // Soft menu button should appear only when there's no hardware menu button.
@@ -551,6 +555,7 @@ public class DialpadFragment extends Fragment
 
         mPortraitOrientation = (getResources().getConfiguration().orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         searchContacts();
+        hideT9(null);
         // Query the last dialed number. Do it first because hitting
         // the DB is 'slow'. This call is asynchronous.
         queryLastOutgoingCall();
@@ -620,7 +625,7 @@ public class DialpadFragment extends Fragment
     public void onPause() {
         super.onPause();
         if (mPortraitOrientation) {
-            hideT9();
+            toggleT9();
         }
         // Stop listening for phone state changes.
         TelephonyManager telephonyManager =
@@ -729,7 +734,33 @@ public class DialpadFragment extends Fragment
         return intent;
     }
 
-    private void hideT9(){
+    private void hideT9 (View view) {
+        if (!mPortraitOrientation){
+            return;
+        }
+        LinearLayout t9top = null;
+        if (view == null) {
+            t9top = (LinearLayout)getActivity().findViewById(R.id.t9topbar);
+        }else{
+            t9top = (LinearLayout)view.findViewById(R.id.t9topbar);
+        }
+        LinearLayout.LayoutParams digitsLayout = (LayoutParams) mDigitsContainer.getLayoutParams();
+        if (!PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean("t9_state", false)){
+            digitsLayout.weight = 0.2f;
+            t9top.setVisibility(View.GONE);
+        }else{
+            digitsLayout.weight = 0.1f;
+            t9top.setVisibility(View.VISIBLE);
+        }
+        mDigitsContainer.setLayoutParams(digitsLayout);
+        return;
+    }
+
+    private void toggleT9(){
+        if (!PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean("t9_state", false)){
+            hideT9(null);
+            return;
+        }
         if (t9flipper.getCurrentView()==t9list){
             t9flipper.showNext();
         }
@@ -773,7 +804,7 @@ public class DialpadFragment extends Fragment
     }
 
     private void searchContacts() {
-        if (!mPortraitOrientation)
+        if (!mPortraitOrientation || !PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean("t9_state", false))
             return;
         final int length = mDigits.length();
         if (length > 0) {
