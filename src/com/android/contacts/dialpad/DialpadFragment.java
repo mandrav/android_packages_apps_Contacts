@@ -69,7 +69,6 @@ import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.QuickContactBadge;
@@ -303,6 +302,7 @@ public class DialpadFragment extends Fragment
 
         // Load up the resources for the text field.
         Resources r = getResources();
+
         mDigitsContainer = fragmentView.findViewById(R.id.digits_container);
         mDigits = (EditText) fragmentView.findViewById(R.id.digits);
         mDigits.setKeyListener(DialerKeyListener.getInstance());
@@ -546,8 +546,7 @@ public class DialpadFragment extends Fragment
         super.onResume();
 
         mPortraitOrientation = (getResources().getConfiguration().orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        if (mPortraitOrientation)
-            searchContacts();
+        searchContacts();
         // Query the last dialed number. Do it first because hitting
         // the DB is 'slow'. This call is asynchronous.
         queryLastOutgoingCall();
@@ -771,9 +770,9 @@ public class DialpadFragment extends Fragment
     }
 
     private void searchContacts() {
-        final int length = mDigits.length();
         if (!mPortraitOrientation)
             return;
+        final int length = mDigits.length();
         if (length > 0) {
             Thread tmpThread = new Thread(new Runnable(){
                 @Override
