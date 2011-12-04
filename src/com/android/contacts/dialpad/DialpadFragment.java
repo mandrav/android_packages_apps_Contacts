@@ -262,6 +262,7 @@ public class DialpadFragment extends Fragment
 
         private ArrayList<ContactItem> items;
         private LayoutInflater menuInflate;
+        private static ContactItem o;
 
         public T9Adapter(Context context, int textViewResourceId, ArrayList<ContactItem> items, LayoutInflater menuInflate) {
             super(context, textViewResourceId, items);
@@ -294,7 +295,7 @@ public class DialpadFragment extends Fragment
             holder.icon.assignContactFromPhone(o.number, true);
             return convertView;
         }
-        static ContactItem o;
+
         static class ViewHolder {
             TextView name,number;
             QuickContactBadge icon;

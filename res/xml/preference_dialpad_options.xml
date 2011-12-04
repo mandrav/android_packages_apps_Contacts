@@ -30,6 +30,7 @@
 		android:key="t9_sort"
 		android:defaultValue="@string/t9_default_sort"
 		android:title="@string/t9_sort_title"
+		android:dependency="t9_state"
 		android:summary="@string/t9_sort_summary"
 		android:entries="@array/t9_sort_entries"
 		android:entryValues="@array/t9_sort_values"
