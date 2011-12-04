@@ -21,4 +21,12 @@
 		android:title="@string/dialer_ui_orientation_title"
 		android:persistent="true"
 		android:summary="@string/dialer_ui_orientation_summary" />
+	<ListPreference
+		android:key="t9_sort"
+		android:defaultValue="@string/t9_default_sort"
+		android:title="@string/t9_sort_title"
+		android:summary="@string/t9_sort_summary"
+		android:entries="@array/t9_sort_entries"
+		android:entryValues="@array/t9_sort_values"
+		android:dialogTitle="@string/t9_sort_title" />
 </PreferenceScreen>
