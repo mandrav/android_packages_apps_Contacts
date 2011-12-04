@@ -63,6 +63,8 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.TranslateAnimation;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
@@ -73,6 +75,8 @@ import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.QuickContactBadge;
 import android.widget.TextView;
+import android.widget.ViewFlipper;
+import android.widget.ViewSwitcher;
 
 import com.android.contacts.ContactsUtils;
 import com.android.contacts.R;
@@ -137,10 +141,10 @@ public class DialpadFragment extends Fragment
     private ListView t9list;
     private TextView t9search;
     private QuickContactBadge t9searchbadge;
-    private boolean t9enabled = false;
     private boolean mPortraitOrientation = true;
     private T9Adapter t9adapter;
     private T9Handler t9handle = new T9Handler();
+    private ViewSwitcher t9flipper;
 
     /**
      * Regular expression prohibiting manual phone call. Can be empty, which means "no rule".
@@ -321,7 +325,7 @@ public class DialpadFragment extends Fragment
         if (t9toggle!=null){
             t9toggle.setOnClickListener(this);
         }
-
+        t9flipper = (ViewSwitcher)fragmentView.findViewById(R.id.t9flipper);
         PhoneNumberFormatter.setPhoneNumberFormattingTextWatcher(getActivity(), mDigits);
 
         // Soft menu button should appear only when there's no hardware menu button.
@@ -726,10 +730,9 @@ public class DialpadFragment extends Fragment
     }
 
     private void hideT9(){
-        t9enabled=false;
-        t9list.setVisibility(View.GONE);
-        mAdditionalButtonsRow.setVisibility(View.VISIBLE);
-        mDialpad.setVisibility(View.VISIBLE);
+        if (t9flipper.getCurrentView()==t9list){
+            t9flipper.showNext();
+        }
     }
 
     class T9Handler extends Handler {
@@ -905,32 +908,19 @@ public class DialpadFragment extends Fragment
                 }
             }
             case R.id.t9toggle: {
-                Animation t9animation;
-                if (!t9enabled){
-                    t9animation = AnimationUtils.loadAnimation(getActivity(), R.anim.translate);
-                }else {
-                    t9animation = AnimationUtils.loadAnimation(getActivity(), R.anim.translateout);
-                }
-                mAdditionalButtonsRow.startAnimation(t9animation);
-                if (t9enabled){
-                    t9list.setVisibility(t9enabled ? View.INVISIBLE : View.VISIBLE);
-                }
-                mDialpad.startAnimation(t9animation);
-                t9animation.setAnimationListener(new Animation.AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {
-                    }
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {
-                    }
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-                        mAdditionalButtonsRow.setVisibility(!t9enabled ? View.GONE : View.VISIBLE);
-                        mDialpad.setVisibility(!t9enabled ? View.GONE : View.VISIBLE);
-                        t9list.setVisibility(t9enabled ? View.GONE : View.VISIBLE);
-                        t9enabled=!t9enabled;
-                    }
-                });
+                TranslateAnimation dialpadSwitch = new TranslateAnimation(
+                        Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, 0.0f,
+                        Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, 1.0f);
+                dialpadSwitch.setDuration(500);
+                dialpadSwitch.setInterpolator(new DecelerateInterpolator());
+                t9flipper.setOutAnimation(dialpadSwitch);
+                dialpadSwitch = new TranslateAnimation(
+                        Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, 0.0f,
+                        Animation.RELATIVE_TO_PARENT, 1.0f, Animation.RELATIVE_TO_PARENT, 0.0f);
+                dialpadSwitch.setDuration(500);
+                dialpadSwitch.setInterpolator(new DecelerateInterpolator());
+                t9flipper.setInAnimation(dialpadSwitch);
+                t9flipper.showNext();
                 return;
             }
         }
@@ -1333,7 +1323,6 @@ public class DialpadFragment extends Fragment
     public void onItemClick(AdapterView parent, View v, int position, long id) {
         if (parent == t9list){
             mDigits.setText(t9adapter.getItem(position).number);
-            dialButtonPressed();
             return;
         }
         DialpadChooserAdapter.ChoiceItem item =
