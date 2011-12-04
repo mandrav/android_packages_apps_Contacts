@@ -772,7 +772,7 @@ public class DialpadFragment extends Fragment
             T9SearchResult result = (T9SearchResult) msg.obj;
             if (result != null && result.getNumResults() > 0) {
                 t9search.setText(result.getTopName() + " : " + result.getTopNumber());
-                t9searchbadge.assignContactFromPhone(result.getTopNumber(), false);
+                t9searchbadge.assignContactFromPhone(result.getTopNumber(), true);
                 if(result.getTopPhoto()!=null) {
                     t9searchbadge.setImageBitmap(result.getTopPhoto());
                 }else {

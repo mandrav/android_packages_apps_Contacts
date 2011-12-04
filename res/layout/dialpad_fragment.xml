@@ -89,7 +89,7 @@
             android:scaleType="centerInside"
             android:layout_marginRight="5dp"
             android:layout_marginLeft="5dp"
-            android:background="@drawable/expander_ic_minimized"
+            android:background="@drawable/expander_open"
             android:layout_gravity="center"/>
     </LinearLayout>
 
