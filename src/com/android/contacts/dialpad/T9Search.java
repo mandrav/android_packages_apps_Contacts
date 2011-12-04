@@ -32,7 +32,7 @@ class T9Search {
     private final static String PEOPLE_QUERY = 
             "(" + LOWER + " GLOB ?) AND " + Contacts.HAS_PHONE_NUMBER + " = 1";
     private static final String[] PEOPLE_PROJECTION = 
-            new String[] { Contacts._ID, Contacts.DISPLAY_NAME, Contacts.LOOKUP_KEY, Contacts.PHOTO_THUMBNAIL_URI};
+            new String[] { Contacts._ID, Contacts.DISPLAY_NAME, Contacts.PHOTO_THUMBNAIL_URI};
     private static final String PEOPLE_SORT = Contacts.DISPLAY_NAME + " COLLATE LOCALIZED ASC"; 
     private static final String[] PHONE_PROJECTION = 
             new String[] { Phone._ID, Contacts.DISPLAY_NAME, Phone.NUMBER, Phone.IS_SUPER_PRIMARY, Phone.PHOTO_THUMBNAIL_URI };
@@ -118,8 +118,8 @@ class T9Search {
                 temp.name = c.getString(1);
                 temp.number = getBestPhone(c.getString(0));
                 temp.matchId = getNameMatchId(temp.name,number);
-                if (c.getString(3)!=null)
-                    temp.photoUri = Media.getBitmap(mContext.getContentResolver(), Uri.parse(c.getString(3)));
+                if (c.getString(2)!=null)
+                    temp.photoUri = Media.getBitmap(mContext.getContentResolver(), Uri.parse(c.getString(2)));
                 nameResults.add(temp);
             }
         } catch (FileNotFoundException e) {
