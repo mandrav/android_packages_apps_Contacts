@@ -78,6 +78,7 @@ import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.QuickContactBadge;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 import android.widget.ViewFlipper;
 import android.widget.ViewSwitcher;
 
@@ -140,7 +141,7 @@ public class DialpadFragment extends Fragment
     private DialpadChooserAdapter mDialpadChooserAdapter;
 
     private T9Search mT9Search;
-    private ImageButton t9toggle;
+    private ToggleButton t9toggle;
     private ListView t9list;
     private TextView t9search;
     private QuickContactBadge t9searchbadge;
@@ -324,7 +325,7 @@ public class DialpadFragment extends Fragment
         if (t9list!= null){
             t9list.setOnItemClickListener(this);
         }
-        t9toggle=(ImageButton)fragmentView.findViewById(R.id.t9toggle);
+        t9toggle=(ToggleButton)fragmentView.findViewById(R.id.t9toggle);
         if (t9toggle!=null){
             t9toggle.setOnClickListener(this);
         }

@@ -81,7 +81,7 @@
             android:visibility="invisible"
             android:layout_width="0dp"
             android:layout_height="match_parent" />
-        <ImageButton
+        <ToggleButton
             android:id="@+id/t9toggle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -89,7 +89,9 @@
             android:scaleType="centerInside"
             android:layout_marginRight="5dp"
             android:layout_marginLeft="5dp"
-            android:background="@drawable/expander_open"
+            android:textOn=""
+            android:textOff=""
+            android:background="@drawable/t9toggle_state"
             android:layout_gravity="center"/>
     </LinearLayout>
 
