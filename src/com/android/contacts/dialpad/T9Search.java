@@ -98,7 +98,7 @@ class T9Search {
                 ContactItem temp = new ContactItem();
                 temp.name = c.getString(1);
                 temp.number = c.getString(2);
-                temp.matchId = temp.number.indexOf(number);
+                temp.matchId = temp.number.replaceAll( "[^\\d]", "" ).indexOf(number);
                 if (c.getString(4)!=null)
                     temp.photoUri = Media.getBitmap(mContext.getContentResolver(), Uri.parse(c.getString(4)));
                 numberResults.add(temp);
