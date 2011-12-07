@@ -821,7 +821,7 @@ public class DialpadFragment extends Fragment
                 tmpMsg.obj = result;
                 t9handle.sendMessage(tmpMsg);
             }});
-            tmpThread.setPriority(Thread.MAX_PRIORITY);
+            tmpThread.setPriority(Thread.MIN_PRIORITY);
             tmpThread.start();
         } else {
             t9handle.sendEmptyMessage(0);

@@ -28,6 +28,7 @@ import android.provider.MediaStore.Images.Media;
  */
 class T9Search {
 
+    //Contact name queries
     private final static String LOWER = "LOWER(" + Contacts.DISPLAY_NAME + ")";
     private final static String PEOPLE_QUERY = 
             "(" + LOWER + " GLOB ?) AND " + Contacts.HAS_PHONE_NUMBER + " = 1";
@@ -36,9 +37,11 @@ class T9Search {
     private static final String PEOPLE_SORT = Contacts.DISPLAY_NAME + " COLLATE LOCALIZED ASC"; 
     private static final String[] PHONE_PROJECTION = 
             new String[] { Phone._ID, Contacts.DISPLAY_NAME, Phone.NUMBER, Phone.IS_SUPER_PRIMARY, Phone.PHOTO_THUMBNAIL_URI };
+    //Contact number queries
     private static final String PHONE_ID_QUERY = Phone.CONTACT_ID + " = ?";
     private static final String PHONE_QUERY = Phone.NORMALIZED_NUMBER + " GLOB ? OR " + Phone.NUMBER + " GLOB ?";
     private static final String PHONE_QUERY_SORT = Phone.IS_SUPER_PRIMARY + " desc";
+    //List sort modes
     private static final int NAME_FIRST = 1;
     private static final int NUMBER_FIRST = 2;
     private static final int DIRECT_NUMBER = 3;
