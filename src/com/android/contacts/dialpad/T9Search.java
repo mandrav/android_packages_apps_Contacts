@@ -52,7 +52,7 @@ class T9Search {
         mContext = context;
     }
 
-    public class T9SearchResult {
+    public static class T9SearchResult {
         private final ArrayList<ContactItem> mResults;
         private ContactItem mTopContact;
         public T9SearchResult (ArrayList<ContactItem> results) {
@@ -150,14 +150,14 @@ class T9Search {
         return result;
     }
 
-    public class CustomComparator implements Comparator<ContactItem> {
+    public static class CustomComparator implements Comparator<ContactItem> {
         @Override
         public int compare(ContactItem lhs, ContactItem rhs) {
             return Integer.compare(lhs.matchId,rhs.matchId);
         }
     }
 
-    private int getNameMatchId(String name, String input) {
+    private static int getNameMatchId(String name, String input) {
         Pattern pattern = Pattern.compile(buildT9ContactQuery(input),Pattern.CASE_INSENSITIVE);
         Matcher m = pattern.matcher(name);
         if (m.find()){
@@ -208,7 +208,7 @@ class T9Search {
                 PEOPLE_SORT);
     }
 
-    private String buildT9ContactQuery(String number) {
+    private static String buildT9ContactQuery(String number) {
         StringBuilder sb = new StringBuilder();
         if (number != null) {
             for (int i = 0; i < number.length(); i++) {
@@ -219,7 +219,7 @@ class T9Search {
         return sb.toString();
     }
 
-    private String numberToRegexPart(char c) {
+    private static String numberToRegexPart(char c) {
         switch (c) {
         case '2':
             return "[2abc]";
