@@ -34,9 +34,8 @@ import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemProperties;
@@ -144,7 +143,6 @@ public class DialpadFragment extends Fragment
     private QuickContactBadge t9searchbadge;
     private boolean mPortraitOrientation;
     private T9Adapter t9adapter;
-    private T9Handler t9handle = new T9Handler();
     private ViewSwitcher t9flipper;
 
     /**
@@ -769,10 +767,17 @@ public class DialpadFragment extends Fragment
         }
     }
 
-    class T9Handler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            T9SearchResult result = (T9SearchResult) msg.obj;
+    private class ContactLookup extends AsyncTask<Integer, Void, T9SearchResult> {
+
+        protected T9SearchResult doInBackground(Integer... param) {
+            if (param[0].intValue()==0){
+                return null;
+            } else {
+                return mT9Search.search(mDigits.getText().toString());
+            }
+        }
+
+        protected void onPostExecute(T9SearchResult result) {
             if (result != null && result.getNumResults() > 0) {
                 t9search.setText(result.getTopName() + " : " + result.getTopNumber());
                 t9searchbadge.assignContactFromPhone(result.getTopNumber(), true);
@@ -813,18 +818,9 @@ public class DialpadFragment extends Fragment
             return;
         final int length = mDigits.length();
         if (length > 0) {
-            Thread tmpThread = new Thread(new Runnable(){
-                @Override
-                public void run() {
-                Message tmpMsg = new Message();
-                T9SearchResult result = mT9Search.search(mDigits.getText().toString());
-                tmpMsg.obj = result;
-                t9handle.sendMessage(tmpMsg);
-            }});
-            tmpThread.setPriority(Thread.MIN_PRIORITY);
-            tmpThread.start();
+                new ContactLookup().execute(1);
         } else {
-            t9handle.sendEmptyMessage(0);
+            new ContactLookup().execute(0);
         }
     }
 
