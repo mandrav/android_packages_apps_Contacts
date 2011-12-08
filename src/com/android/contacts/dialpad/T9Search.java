@@ -49,7 +49,7 @@ class T9Search {
     ArrayList<ContactItem> numberResults = new ArrayList<ContactItem>();
     Set<ContactItem> allResults = new LinkedHashSet<ContactItem>();
     String inputNumber;
-    static Cursor c;
+    Cursor cursor;
 
     public T9Search(Context context) {
         mContext = context;
@@ -121,16 +121,17 @@ class T9Search {
         Thread phones = new Thread(new Runnable(){
             @Override
             public void run () {
-                c = searchPhones(inputNumber);
-                while (c.moveToNext()) {
+                Cursor numberCursor = searchPhones(inputNumber);
+                while (numberCursor.moveToNext()) {
                     ContactItem temp = new ContactItem();
-                    temp.name = c.getString(1);
-                    temp.number = c.getString(2);
+                    temp.name = numberCursor.getString(1);
+                    temp.number = numberCursor.getString(2);
                     temp.matchId = temp.number.replaceAll( "[^\\d]", "" ).indexOf(inputNumber);
-                    if (c.getString(4)!=null)
-                      temp.photoUri = Uri.parse(c.getString(4));
+                    if (numberCursor.getString(4)!=null)
+                      temp.photoUri = Uri.parse(numberCursor.getString(4));
                     numberResults.add(temp);
                 }
+                numberCursor.close();
                 Collections.sort(numberResults, new CustomComparator());
             }
         });
@@ -139,16 +140,17 @@ class T9Search {
         Thread names = new Thread(new Runnable(){
             @Override
             public void run () {
-                c = searchContacts(inputNumber);
-                while (c.moveToNext()) {
+                Cursor nameCursor = searchContacts(inputNumber);
+                while (nameCursor.moveToNext()) {
                     ContactItem temp = new ContactItem();
-                    temp.name = c.getString(1);
-                    temp.number = getBestPhone(c.getString(0));
+                    temp.name = nameCursor.getString(1);
+                    temp.number = getBestPhone(nameCursor.getString(0));
                     temp.matchId = getNameMatchId(temp.name,inputNumber);
-                    if (c.getString(2)!=null)
-                       temp.photoUri = Uri.parse(c.getString(2));
+                    if (nameCursor.getString(2)!=null)
+                       temp.photoUri = Uri.parse(nameCursor.getString(2));
                     nameResults.add(temp);
                 }
+                nameCursor.close();
                 Collections.sort(nameResults, new CustomComparator());
             }
         });
@@ -162,7 +164,7 @@ class T9Search {
             names.join();
             phones.join();
         } catch (InterruptedException e) {
-            c.close();
+            cursor.close();
             return null;
         }
 
@@ -177,10 +179,10 @@ class T9Search {
                 allResults.addAll(numberResults);
                 allResults.addAll(nameResults);
             }
-            c.close();
+            cursor.close();
             return new T9SearchResult(new ArrayList<ContactItem>(allResults), mContext);
         }
-        c.close();
+        cursor.close();
         return null;
     }
 
@@ -204,9 +206,9 @@ class T9Search {
     private String getBestPhone(String contactId) {
         Uri baseUri = ContentUris.withAppendedId(Contacts.CONTENT_URI, Long.valueOf(contactId));
         Uri dataUri = Uri.withAppendedPath(baseUri, Contacts.Data.CONTENT_DIRECTORY);
-        c = mContext.getContentResolver().query(dataUri,PHONE_PROJECTION,PHONE_ID_SELECTION,PHONE_ID_SELECTION_ARGS,null);
-        if (c != null && c.moveToFirst()) {
-                return c.getString(2);
+        cursor = mContext.getContentResolver().query(dataUri,PHONE_PROJECTION,PHONE_ID_SELECTION,PHONE_ID_SELECTION_ARGS,null);
+        if (cursor != null && cursor.moveToFirst()) {
+                return cursor.getString(2);
         }
         return null;
     }
