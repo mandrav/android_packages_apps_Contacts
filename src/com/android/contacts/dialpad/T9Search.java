@@ -151,6 +151,7 @@ class T9Search {
                     nameResults.add(temp);
                 }
                 nameCursor.close();
+                cursor.close();
                 Collections.sort(nameResults, new CustomComparator());
             }
         });
@@ -164,7 +165,6 @@ class T9Search {
             names.join();
             phones.join();
         } catch (InterruptedException e) {
-            cursor.close();
             return null;
         }
 
@@ -179,10 +179,8 @@ class T9Search {
                 allResults.addAll(numberResults);
                 allResults.addAll(nameResults);
             }
-            cursor.close();
             return new T9SearchResult(new ArrayList<ContactItem>(allResults), mContext);
         }
-        cursor.close();
         return null;
     }
 
