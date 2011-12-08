@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.android.contacts.dialpad;
 
 import java.io.FileNotFoundException;
@@ -53,6 +50,7 @@ class T9Search {
     ArrayList<ContactItem> numberResults = new ArrayList<ContactItem>();
     Set<ContactItem> allResults = new LinkedHashSet<ContactItem>();
     String inputNumber;
+    static Cursor c;
 
     public T9Search(Context context) {
         mContext = context;
@@ -124,7 +122,7 @@ class T9Search {
         Thread phones = new Thread(new Runnable(){
             @Override
             public void run () {
-                Cursor c = searchPhones(inputNumber);
+                c = searchPhones(inputNumber);
                 while (c.moveToNext()) {
                     ContactItem temp = new ContactItem();
                     temp.name = c.getString(1);
@@ -134,7 +132,6 @@ class T9Search {
                       temp.photoUri = Uri.parse(c.getString(4));
                     numberResults.add(temp);
                 }
-                c.close();
                 Collections.sort(numberResults, new CustomComparator());
             }
         });
@@ -143,7 +140,7 @@ class T9Search {
         Thread names = new Thread(new Runnable(){
             @Override
             public void run () {
-                Cursor c = searchContacts(inputNumber);
+                c = searchContacts(inputNumber);
                 while (c.moveToNext()) {
                     ContactItem temp = new ContactItem();
                     temp.name = c.getString(1);
@@ -153,7 +150,6 @@ class T9Search {
                        temp.photoUri = Uri.parse(c.getString(2));
                     nameResults.add(temp);
                 }
-                c.close();
                 Collections.sort(nameResults, new CustomComparator());
             }
         });
@@ -167,6 +163,7 @@ class T9Search {
             names.join();
             phones.join();
         } catch (InterruptedException e) {
+            c.close();
             return null;
         }
 
@@ -181,8 +178,10 @@ class T9Search {
                 allResults.addAll(numberResults);
                 allResults.addAll(nameResults);
             }
+            c.close();
             return new T9SearchResult(new ArrayList<ContactItem>(allResults), mContext);
         }
+        c.close();
         return null;
     }
 
@@ -206,11 +205,9 @@ class T9Search {
     private String getBestPhone(String contactId) {
         Uri baseUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, Long.valueOf(contactId));
         Uri dataUri = Uri.withAppendedPath(baseUri, ContactsContract.Contacts.Data.CONTENT_DIRECTORY);
-        Cursor c = mContext.getContentResolver().query(dataUri,PHONE_PROJECTION,PHONE_ID_SELECTION,PHONE_ID_SELECTION_ARGS,null);
+        c = mContext.getContentResolver().query(dataUri,PHONE_PROJECTION,PHONE_ID_SELECTION,PHONE_ID_SELECTION_ARGS,null);
         if (c != null && c.moveToFirst()) {
-                String phone = c.getString(2);
-                c.close();
-                return phone;
+                return c.getString(2);
         }
         return null;
     }
