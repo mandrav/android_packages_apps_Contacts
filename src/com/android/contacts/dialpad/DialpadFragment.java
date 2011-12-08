@@ -286,7 +286,7 @@ public class DialpadFragment extends Fragment
             holder.name.setText(o.name);
             holder.number.setText(o.number);
             if (o.photoUri!=null){
-                holder.icon.setImageBitmap(o.photoUri);
+                holder.icon.setImageBitmap(o.photo);
             }else {
                 holder.icon.setImageResource(R.drawable.ic_contact_picture_180_holo_dark);
             }
