@@ -16,7 +16,6 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.preference.PreferenceManager;
-import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Contacts;
 import android.provider.MediaStore.Images.Media;
@@ -34,8 +33,8 @@ class T9Search {
 
     //Phone number queries
     private static final String[] PHONE_PROJECTION = new String[] { Phone._ID, Contacts.DISPLAY_NAME, Phone.NUMBER, Phone.IS_SUPER_PRIMARY, Phone.PHOTO_THUMBNAIL_URI };
-    private static final String PHONE_ID_SELECTION = ContactsContract.Contacts.Data.MIMETYPE + " = ? ";
-    private static final String[] PHONE_ID_SELECTION_ARGS = new String[] {ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE};
+    private static final String PHONE_ID_SELECTION = Contacts.Data.MIMETYPE + " = ? ";
+    private static final String[] PHONE_ID_SELECTION_ARGS = new String[] {Phone.CONTENT_ITEM_TYPE};
     private static final String PHONE_SELECTION = Phone.NORMALIZED_NUMBER + " GLOB ? OR " + Phone.NUMBER + " GLOB ?";
 
     //List sort modes
@@ -203,8 +202,8 @@ class T9Search {
     }
 
     private String getBestPhone(String contactId) {
-        Uri baseUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, Long.valueOf(contactId));
-        Uri dataUri = Uri.withAppendedPath(baseUri, ContactsContract.Contacts.Data.CONTENT_DIRECTORY);
+        Uri baseUri = ContentUris.withAppendedId(Contacts.CONTENT_URI, Long.valueOf(contactId));
+        Uri dataUri = Uri.withAppendedPath(baseUri, Contacts.Data.CONTENT_DIRECTORY);
         c = mContext.getContentResolver().query(dataUri,PHONE_PROJECTION,PHONE_ID_SELECTION,PHONE_ID_SELECTION_ARGS,null);
         if (c != null && c.moveToFirst()) {
                 return c.getString(2);
