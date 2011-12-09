@@ -1,7 +1,6 @@
 package com.android.contacts.dialpad;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -14,28 +13,19 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Contacts;
-import android.provider.MediaStore.Images.Media;
+import android.telephony.PhoneNumberUtils;
 
 /**
  * @author shade,Danesh
  *
  */
 class T9Search {
-
-    //Contact name queries
-    private final static String LOWER = "LOWER(" + Contacts.DISPLAY_NAME + ")";
-    private final static String PEOPLE_SELECTION = "(" + LOWER + " GLOB ?) AND " + Contacts.HAS_PHONE_NUMBER + " = 1";
-    private static final String[] PEOPLE_PROJECTION = new String[] { Contacts._ID, Contacts.DISPLAY_NAME, Contacts.PHOTO_THUMBNAIL_URI};
-
-    //Phone number queries
-    private static final String[] PHONE_PROJECTION = new String[] { Phone._ID, Contacts.DISPLAY_NAME, Phone.NUMBER, Phone.IS_SUPER_PRIMARY, Phone.PHOTO_THUMBNAIL_URI };
-    private static final String PHONE_ID_SELECTION = Contacts.Data.MIMETYPE + " = ? ";
-    private static final String[] PHONE_ID_SELECTION_ARGS = new String[] {Phone.CONTENT_ITEM_TYPE};
-    private static final String PHONE_SELECTION = Phone.NORMALIZED_NUMBER + " GLOB ? OR " + Phone.NUMBER + " GLOB ?";
 
     //List sort modes
     private static final int NAME_FIRST = 1;
@@ -44,15 +34,48 @@ class T9Search {
     private Context mContext;
     private int mSortMode;
 
+    //Phone number queries
+    private static final String[] PHONE_PROJECTION = new String[] { Phone.NUMBER};
+    private static final String PHONE_ID_SELECTION = Contacts.Data.MIMETYPE + " = ? ";
+    private static final String[] PHONE_ID_SELECTION_ARGS = new String[] {Phone.CONTENT_ITEM_TYPE};
+    private static final String[] CONTACT_PROJECTION = new String[] { Contacts._ID, Contacts.DISPLAY_NAME};
+    private final static String CONTACT_QUERY = Contacts.HAS_PHONE_NUMBER + " > 0";
+
     //Local variables
     ArrayList<ContactItem> nameResults = new ArrayList<ContactItem>();
     ArrayList<ContactItem> numberResults = new ArrayList<ContactItem>();
     Set<ContactItem> allResults = new LinkedHashSet<ContactItem>();
+    static ArrayList<ContactItem> contacts = new ArrayList<ContactItem>();
     String inputNumber;
-    Cursor cursor;
+    static boolean firstTime = true;
 
     public T9Search(Context context) {
         mContext = context;
+        getAll();
+    }
+
+    void getAll() {
+        Cursor c = mContext.getContentResolver().query(Contacts.CONTENT_URI, CONTACT_PROJECTION, CONTACT_QUERY, null, null);
+        while (c.moveToNext()) {
+            long contactId = c.getLong(0);
+            for (String num : getPhone(String.valueOf(contactId))) {
+                ContactItem contactInfo = new ContactItem();
+                contactInfo.id = contactId;
+                contactInfo.name = c.getString(1);
+                contactInfo.number = PhoneNumberUtils.formatNumber(num);
+                contacts.add(contactInfo);
+            }
+        }
+        c.close();
+    }
+
+    private static Bitmap getPhoto(long id, Context mContext) {
+        Uri uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, id);
+        InputStream imageStream = ContactsContract.Contacts.openContactPhotoInputStream(mContext.getContentResolver(), uri);
+        if (imageStream == null) {
+            return null;
+        }
+        return Bitmap.createScaledBitmap(BitmapFactory.decodeStream(imageStream), 40, 40, false);
     }
 
     public static class T9SearchResult {
@@ -62,28 +85,21 @@ class T9Search {
             mTopContact = new ContactItem();
             mTopContact.name = results.get(0).name;
             mTopContact.number = results.get(0).number;
-            try {
-                if (results.get(0).photoUri != null)
-                mTopContact.photo = Media.getBitmap(mContext.getContentResolver(), results.get(0).photoUri);
-            } catch (FileNotFoundException e) {
-            } catch (IOException e) {
+            if (!firstTime) {
+                mTopContact.photo = results.get(0).photo;
+            } else {
+                mTopContact.photo = getPhoto(results.get(0).id,mContext);
+                new Thread(new Runnable() {
+                    public void run () {
+                        for (ContactItem item : contacts) {
+                            item.photo = getPhoto(item.id,mContext);
+                        }
+                    }
+                }).start();
             }
             this.mResults = results;
             mResults.remove(0);
-            Thread pics = new Thread(new Runnable(){
-                @Override
-                public void run () {
-                    for (ContactItem a : results) {
-                        try {
-                            if (a.photoUri != null)
-                            a.photo = Media.getBitmap(mContext.getContentResolver(), a.photoUri);
-                        } catch (FileNotFoundException e) {
-                        } catch (IOException e) {
-                        }
-                    }
-                }
-            });
-            pics.start();
+            firstTime = false;
         }
         public int getNumResults() {
             return mResults.size()+1;
@@ -104,10 +120,10 @@ class T9Search {
 
     protected static class ContactItem {
         Bitmap photo;
-        Uri photoUri;
         String name;
         String number;
         int matchId;
+        long id;
     }
 
     public T9SearchResult search(String number) {
@@ -116,58 +132,19 @@ class T9Search {
         allResults.clear();
         inputNumber=number.replaceAll( "[^\\d]", "" );
         mSortMode = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(mContext).getString("t9_sort", "1"));
-
-        //Search for matching phone numbers
-        Thread phones = new Thread(new Runnable(){
-            @Override
-            public void run () {
-                Cursor numberCursor = searchPhones(inputNumber);
-                while (numberCursor.moveToNext()) {
-                    ContactItem temp = new ContactItem();
-                    temp.name = numberCursor.getString(1);
-                    temp.number = numberCursor.getString(2);
-                    temp.matchId = temp.number.replaceAll( "[^\\d]", "" ).indexOf(inputNumber);
-                    if (numberCursor.getString(4)!=null)
-                      temp.photoUri = Uri.parse(numberCursor.getString(4));
-                    numberResults.add(temp);
-                }
-                numberCursor.close();
-                Collections.sort(numberResults, new CustomComparator());
+        //Go through each contact
+        for (ContactItem item : contacts) {
+            if (item.number.replaceAll( "[^\\d]", "" ).contains(inputNumber)){
+                item.matchId = item.number.replaceAll( "[^\\d]", "" ).indexOf(inputNumber);
+                numberResults.add(item);
             }
-        });
-
-        //Search for matching contact names
-        Thread names = new Thread(new Runnable(){
-            @Override
-            public void run () {
-                Cursor nameCursor = searchContacts(inputNumber);
-                while (nameCursor.moveToNext()) {
-                    ContactItem temp = new ContactItem();
-                    temp.name = nameCursor.getString(1);
-                    temp.number = getBestPhone(nameCursor.getString(0));
-                    temp.matchId = getNameMatchId(temp.name,inputNumber);
-                    if (nameCursor.getString(2)!=null)
-                       temp.photoUri = Uri.parse(nameCursor.getString(2));
-                    nameResults.add(temp);
-                }
-                nameCursor.close();
-                cursor.close();
-                Collections.sort(nameResults, new CustomComparator());
+            if (getNameMatchId(item.name,inputNumber)!=item.name.length()+1){
+                item.matchId = getNameMatchId(item.name,inputNumber);
+                nameResults.add(item);
             }
-        });
-
-        names.setPriority(Thread.MAX_PRIORITY);
-        if (mSortMode != DIRECT_NUMBER) {
-            names.start();
         }
-        phones.start();
-        try {
-            names.join();
-            phones.join();
-        } catch (InterruptedException e) {
-            return null;
-        }
-
+        Collections.sort(numberResults, new CustomComparator());
+        Collections.sort(nameResults, new CustomComparator());
         if (nameResults.size() > 0 || numberResults.size() > 0) {
             switch (mSortMode) {
             case NAME_FIRST:
@@ -197,42 +174,23 @@ class T9Search {
         if (m.find()){
             return m.start();
         }else{
-            return name.length();
+            return name.length()+1;
         }
     }
 
-    private String getBestPhone(String contactId) {
+    private ArrayList<String> getPhone(String contactId) {
         Uri baseUri = ContentUris.withAppendedId(Contacts.CONTENT_URI, Long.valueOf(contactId));
         Uri dataUri = Uri.withAppendedPath(baseUri, Contacts.Data.CONTENT_DIRECTORY);
-        cursor = mContext.getContentResolver().query(dataUri,PHONE_PROJECTION,PHONE_ID_SELECTION,PHONE_ID_SELECTION_ARGS,null);
-        if (cursor != null && cursor.moveToFirst()) {
-                return cursor.getString(2);
+        Cursor cursor = mContext.getContentResolver().query(dataUri,PHONE_PROJECTION,PHONE_ID_SELECTION,PHONE_ID_SELECTION_ARGS,null);
+        ArrayList<String> allNums = new ArrayList<String>();
+        if (cursor != null) {
+            while (cursor.moveToNext()){
+                allNums.add(cursor.getString(0));
+            }
+            cursor.close();
+            return allNums;
         }
         return null;
-    }
-
-    private Cursor searchPhones(String number) {
-        String query = null;
-        if (mSortMode==DIRECT_NUMBER){
-            Uri contactUri = Uri.withAppendedPath(Phone.CONTENT_FILTER_URI, Uri.encode(number));
-            return mContext.getContentResolver().query(contactUri, PHONE_PROJECTION, null, null, null);
-        }else{
-            query = "*" + number + "*";
-            return mContext.getContentResolver().query(Phone.CONTENT_URI,
-                    PHONE_PROJECTION,
-                    PHONE_SELECTION,
-                    new String[] {query,query},
-                    null);
-        }
-    }
-
-    private Cursor searchContacts(String number) {
-        String matcher = buildT9ContactQuery(number);
-        return mContext.getContentResolver().query(Contacts.CONTENT_URI, 
-                PEOPLE_PROJECTION,
-                PEOPLE_SELECTION,
-                new String[] { "*" + matcher + "*" },
-                null);
     }
 
     private static String buildT9ContactQuery(String number) {

@@ -285,7 +285,7 @@ public class DialpadFragment extends Fragment
             o = items.get(position);
             holder.name.setText(o.name);
             holder.number.setText(o.number);
-            if (o.photoUri!=null){
+            if (o.photo!=null){
                 holder.icon.setImageBitmap(o.photo);
             }else {
                 holder.icon.setImageResource(R.drawable.ic_contact_picture_180_holo_dark);
@@ -319,7 +319,14 @@ public class DialpadFragment extends Fragment
             t9search.setOnClickListener(this);
         }
         t9searchbadge = (QuickContactBadge) fragmentView.findViewById(R.id.t9badge);
-        mT9Search = new T9Search(getActivity());
+
+        new Thread(new Runnable() {
+            public void run () {
+                synchronized(t9search) {
+                    mT9Search = new T9Search(getActivity());
+                }
+            }
+        }).start();
         t9list = (ListView)fragmentView.findViewById(R.id.t9list);
         if (t9list!= null){
             t9list.setOnItemClickListener(this);
@@ -818,9 +825,14 @@ public class DialpadFragment extends Fragment
             return;
         final int length = mDigits.length();
         if (length > 0) {
+            if (mT9Search != null) {
                 new ContactLookup().execute(1);
+            }
         } else {
-            new ContactLookup().execute(0);
+            t9searchbadge.setVisibility(View.INVISIBLE);
+            t9search.setVisibility(View.INVISIBLE);
+            t9toggle.setVisibility(View.INVISIBLE);
+            toggleT9();
         }
     }
 
