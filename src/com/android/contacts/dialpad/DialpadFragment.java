@@ -904,7 +904,7 @@ public class DialpadFragment extends Fragment
                 t9flipper.setOutAnimation(dialpadSwitch);
                 dialpadSwitch = new TranslateAnimation(
                         Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, 0.0f,
-                        Animation.RELATIVE_TO_PARENT, 1.0f, Animation.RELATIVE_TO_PARENT, 0.0f);
+                        Animation.RELATIVE_TO_PARENT, -1.0f, Animation.RELATIVE_TO_PARENT, 0.0f);
                 dialpadSwitch.setDuration(500);
                 dialpadSwitch.setInterpolator(new DecelerateInterpolator());
                 t9flipper.setInAnimation(dialpadSwitch);
