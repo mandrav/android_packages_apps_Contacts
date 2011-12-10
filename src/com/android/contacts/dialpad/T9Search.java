@@ -91,13 +91,10 @@ class T9Search {
 
     public static class T9SearchResult {
         private final ArrayList<ContactItem> mResults;
-        private ContactItem mTopContact;
+        private ContactItem mTopContact = new ContactItem();
         public T9SearchResult (final ArrayList<ContactItem> results, final Context mContext) {
-            mTopContact = new ContactItem();
-            mTopContact.name = results.get(0).name;
-            mTopContact.number = results.get(0).number;
-            mTopContact.photo = results.get(0).photo;
-            this.mResults = results;
+            mTopContact = results.get(0);
+            mResults = results;
             mResults.remove(0);
         }
         public int getNumResults() {
