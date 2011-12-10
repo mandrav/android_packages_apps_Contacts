@@ -32,7 +32,6 @@ import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.os.ServiceManager;
@@ -724,59 +723,45 @@ public class DialpadFragment extends Fragment
         }
     }
 
-    private class ContactLookup extends AsyncTask<Integer, Void, T9SearchResult> {
-
-        protected T9SearchResult doInBackground(Integer... param) {
-            if (param[0].intValue()==0){
-                return null;
-            } else {
-                return mT9Search.search(mDigits.getText().toString());
-            }
-        }
-
-        protected void onPostExecute(T9SearchResult result) {
-            if (result != null && result.getNumResults() > 0) {
-                t9search.setText(result.getTopName() + " : " + result.getTopNumber());
-                t9searchbadge.assignContactFromPhone(result.getTopNumber(), true);
-                t9searchbadge.setTag(result.getTopNumber());
-                if(result.getTopPhoto()!=null) {
-                    t9searchbadge.setImageBitmap(result.getTopPhoto());
-                }else {
-                    t9searchbadge.setImageResource(R.drawable.ic_contact_picture_180_holo_dark);
-                }
-                if (result.getNumResults()>1) {
-                    t9toggle.setVisibility(View.VISIBLE);
-                }else{
-                    t9toggle.setVisibility(View.GONE);
-                }
-                if (t9adapter == null){
-                    t9adapter = new T9Adapter(getActivity(), 0, result.getResults(),getActivity().getLayoutInflater());
-                    t9adapter.setNotifyOnChange(true);
-                    t9list.setAdapter(t9adapter);
-                }else{
-                    t9adapter.clear();
-                    t9adapter.addAll(result.getResults());
-                }
-                if (t9list.getAdapter()==null)
-                    t9list.setAdapter(t9adapter);
-                t9searchbadge.setVisibility(View.VISIBLE);
-                t9search.setVisibility(View.VISIBLE);
-            } else{
-                t9searchbadge.setVisibility(View.INVISIBLE);
-                t9search.setVisibility(View.INVISIBLE);
-                t9toggle.setVisibility(View.INVISIBLE);
-                toggleT9();
-            }
-        }
-    }
-
     private void searchContacts() {
         if (!isPortrait() || !isT9On())
             return;
         final int length = mDigits.length();
         if (length > 0) {
             if (mT9Search != null) {
-                new ContactLookup().execute(1);
+                T9SearchResult result = mT9Search.search(mDigits.getText().toString());
+                if (result.getNumResults() > 0) {
+                    t9search.setText(result.getTopName() + " : " + result.getTopNumber());
+                    t9searchbadge.assignContactFromPhone(result.getTopNumber(), true);
+                    t9searchbadge.setTag(result.getTopNumber());
+                    if(result.getTopPhoto()!=null) {
+                        t9searchbadge.setImageBitmap(result.getTopPhoto());
+                    }else {
+                        t9searchbadge.setImageResource(R.drawable.ic_contact_picture_180_holo_dark);
+                    }
+                    if (result.getNumResults()>1) {
+                        t9toggle.setVisibility(View.VISIBLE);
+                    }else{
+                        t9toggle.setVisibility(View.GONE);
+                    }
+                    if (t9adapter == null){
+                        t9adapter = new T9Adapter(getActivity(), 0, result.getResults(),getActivity().getLayoutInflater());
+                        t9adapter.setNotifyOnChange(true);
+                        t9list.setAdapter(t9adapter);
+                    }else{
+                        t9adapter.clear();
+                        t9adapter.addAll(result.getResults());
+                    }
+                    if (t9list.getAdapter()==null)
+                        t9list.setAdapter(t9adapter);
+                    t9searchbadge.setVisibility(View.VISIBLE);
+                    t9search.setVisibility(View.VISIBLE);
+                } else {
+                    t9searchbadge.setVisibility(View.INVISIBLE);
+                    t9search.setVisibility(View.INVISIBLE);
+                    t9toggle.setVisibility(View.INVISIBLE);
+                    toggleT9();
+                }
             }
         } else {
             t9searchbadge.setVisibility(View.INVISIBLE);
