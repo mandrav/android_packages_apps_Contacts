@@ -240,7 +240,6 @@ public class DialpadFragment extends Fragment
                 mT9Search = new T9Search(getActivity());
             }
         });
-        loadContacts.setPriority(Thread.MAX_PRIORITY);
         loadContacts.start();
 
         mCurrentCountryIso = ContactsUtils.getCurrentCountryIso(getActivity());

@@ -39,12 +39,13 @@ class T9Search {
     private static final int DIRECT_NUMBER = 3;
 
     // Phone number queries
-    private static final String[] PHONE_PROJECTION = new String[] {Phone.NUMBER};
+    private static final String[] PHONE_PROJECTION = new String[] {Phone.NUMBER, Phone.CONTACT_ID, Phone.IS_SUPER_PRIMARY};
     private static final String PHONE_ID_SELECTION = Contacts.Data.MIMETYPE + " = ? ";
     private static final String[] PHONE_ID_SELECTION_ARGS = new String[] {Phone.CONTENT_ITEM_TYPE};
-    private static final String[] CONTACT_PROJECTION = new String[] {Contacts._ID, Contacts.DISPLAY_NAME};
+    private static final String PHONE_SORT = Phone.CONTACT_ID + " ASC";
+    private static final String[] CONTACT_PROJECTION = new String[] {Contacts._ID, Contacts.DISPLAY_NAME, Contacts.TIMES_CONTACTED};
     private static final String CONTACT_QUERY = Contacts.HAS_PHONE_NUMBER + " > 0";
-    private static final String CONTACT_SORT = Contacts.TIMES_CONTACTED + " DESC";
+    private static final String CONTACT_SORT = Contacts._ID + " ASC";
 
     // Local variables
     private Context mContext;
@@ -52,7 +53,7 @@ class T9Search {
     private ArrayList<ContactItem> nameResults = new ArrayList<ContactItem>();
     private ArrayList<ContactItem> numberResults = new ArrayList<ContactItem>();
     private Set<ContactItem> allResults = new LinkedHashSet<ContactItem>();
-    private static ArrayList<ContactItem> contacts = new ArrayList<ContactItem>();
+    private ArrayList<ContactItem> contacts = new ArrayList<ContactItem>();
     private static Pattern removeNonDigits = Pattern.compile("[^\\d]");
 
     public T9Search(Context context) {
@@ -60,22 +61,38 @@ class T9Search {
         getAll();
     }
 
-    void getAll() {
+    private void getAll() {
         initT9Map();
-        Cursor c = mContext.getContentResolver().query(Contacts.CONTENT_URI, CONTACT_PROJECTION, CONTACT_QUERY, null, CONTACT_SORT);
-        while (c.moveToNext()) {
-            long contactId = c.getLong(0);
-            for (String num : getPhone(String.valueOf(contactId))) {
+        Cursor contact = mContext.getContentResolver().query(Contacts.CONTENT_URI, CONTACT_PROJECTION, CONTACT_QUERY, null, CONTACT_SORT);
+        Cursor phone = mContext.getContentResolver().query(Phone.CONTENT_URI, PHONE_PROJECTION, PHONE_ID_SELECTION, PHONE_ID_SELECTION_ARGS, PHONE_SORT);
+        phone.moveToFirst();
+
+        while (contact.moveToNext()) {
+            long contactId = contact.getLong(0);
+
+            if (phone.isAfterLast()) {
+                break;
+            }
+
+            while (phone.getLong(1) == contactId) {
+                String num = phone.getString(0);
                 ContactItem contactInfo = new ContactItem();
                 contactInfo.id = contactId;
-                contactInfo.name = c.getString(1);
+                contactInfo.name = contact.getString(1);
                 contactInfo.number = PhoneNumberUtils.formatNumber(num);
                 contactInfo.normalNumber = removeNonDigits.matcher(num).replaceAll("");
-                contactInfo.normalName = nameToNumber(c.getString(1));
+                contactInfo.normalName = nameToNumber(contact.getString(1));
+                contactInfo.timesContacted = contact.getInt(2);
+                contactInfo.isSuperPrimary = phone.getInt(2) > 0;
                 contacts.add(contactInfo);
+
+                if (!phone.moveToNext()) {
+                    break;
+                }
             }
         }
-        c.close();
+        contact.close();
+        phone.close();
         Thread loadPics = new Thread(new Runnable() {
             public void run () {
                 InputStream imageStream = null;
@@ -131,8 +148,10 @@ class T9Search {
         String number;
         String normalNumber;
         String normalName;
+        int timesContacted;
         int matchId;
         long id;
+        boolean isSuperPrimary;
     }
 
     public T9SearchResult search(String number) {
@@ -182,7 +201,10 @@ class T9Search {
     public static class CustomComparator implements Comparator<ContactItem> {
         @Override
         public int compare(ContactItem lhs, ContactItem rhs) {
-            return Integer.compare(lhs.matchId,rhs.matchId);
+            int ret = Integer.compare(lhs.matchId, rhs.matchId);
+            if (ret == 0) ret = Integer.compare(rhs.timesContacted, lhs.timesContacted);
+            if (ret == 0) ret = Boolean.compare(rhs.isSuperPrimary, lhs.isSuperPrimary);
+            return ret;
         }
     }
 
@@ -224,21 +246,6 @@ class T9Search {
             }
         }
         return sb.toString();
-    }
-
-    private ArrayList<String> getPhone(String contactId) {
-        Uri baseUri = ContentUris.withAppendedId(Contacts.CONTENT_URI, Long.valueOf(contactId));
-        Uri dataUri = Uri.withAppendedPath(baseUri, Contacts.Data.CONTENT_DIRECTORY);
-        Cursor cursor = mContext.getContentResolver().query(dataUri,PHONE_PROJECTION,PHONE_ID_SELECTION,PHONE_ID_SELECTION_ARGS,null);
-        ArrayList<String> allNums = new ArrayList<String>();
-        if (cursor != null) {
-            while (cursor.moveToNext()) {
-                allNums.add(cursor.getString(0));
-            }
-            cursor.close();
-            return allNums;
-        }
-        return null;
     }
 
     protected static class T9Adapter extends ArrayAdapter<ContactItem> {
