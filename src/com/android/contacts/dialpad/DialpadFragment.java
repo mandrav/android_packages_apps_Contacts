@@ -16,8 +16,6 @@
 
 package com.android.contacts.dialpad;
 
-import java.util.ArrayList;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -65,7 +63,6 @@ import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.TranslateAnimation;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -83,7 +80,7 @@ import com.android.contacts.R;
 import com.android.contacts.SpecialCharSequenceMgr;
 import com.android.contacts.activities.DialtactsActivity;
 import com.android.contacts.activities.DialtactsActivity.ViewPagerVisibilityListener;
-import com.android.contacts.dialpad.T9Search.ContactItem;
+import com.android.contacts.dialpad.T9Search.T9Adapter;
 import com.android.contacts.dialpad.T9Search.T9SearchResult;
 import com.android.contacts.util.PhoneNumberFormatter;
 import com.android.internal.telephony.ITelephony;
@@ -261,50 +258,6 @@ public class DialpadFragment extends Fragment
 
         mProhibitedPhoneNumberRegexp = getResources().getString(
                 R.string.config_prohibited_phone_number_regexp);
-    }
-
-    private static class T9Adapter extends ArrayAdapter<ContactItem> {
-
-        private ArrayList<ContactItem> items;
-        private LayoutInflater menuInflate;
-        private static ContactItem o;
-
-        public T9Adapter(Context context, int textViewResourceId, ArrayList<ContactItem> items, LayoutInflater menuInflate) {
-            super(context, textViewResourceId, items);
-            this.items = items;
-            this.menuInflate = menuInflate;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder holder;
-
-            if (convertView == null) {
-                convertView = menuInflate.inflate(R.layout.row, null);
-                holder = new ViewHolder();
-                holder.name = (TextView) convertView.findViewById(R.id.rowName);
-                holder.number = (TextView) convertView.findViewById(R.id.rowNumber);
-                holder.icon = (QuickContactBadge) convertView.findViewById(R.id.rowBadge);
-                convertView.setTag(holder);
-            } else {
-                holder = (ViewHolder) convertView.getTag();
-            }
-            o = items.get(position);
-            holder.name.setText(o.name);
-            holder.number.setText(o.number);
-            if (o.photo!=null){
-                holder.icon.setImageBitmap(o.photo);
-            }else {
-                holder.icon.setImageResource(R.drawable.ic_contact_picture_180_holo_dark);
-            }
-            holder.icon.assignContactFromPhone(o.number, true);
-            return convertView;
-        }
-
-        static class ViewHolder {
-            TextView name,number;
-            QuickContactBadge icon;
-        }
     }
 
     @Override

@@ -8,7 +8,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import com.android.contacts.R;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
@@ -20,6 +20,12 @@ import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Contacts;
 import android.telephony.PhoneNumberUtils;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.QuickContactBadge;
+import android.widget.TextView;
 
 /**
  * @author shade,Danesh
@@ -219,6 +225,50 @@ class T9Search {
             return "?";
         default:
             return String.valueOf(c);
+        }
+    }
+
+    protected static class T9Adapter extends ArrayAdapter<ContactItem> {
+
+        private ArrayList<ContactItem> items;
+        private LayoutInflater menuInflate;
+        private static ContactItem o;
+
+        public T9Adapter(Context context, int textViewResourceId, ArrayList<ContactItem> items, LayoutInflater menuInflate) {
+            super(context, textViewResourceId, items);
+            this.items = items;
+            this.menuInflate = menuInflate;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewHolder holder;
+
+            if (convertView == null) {
+                convertView = menuInflate.inflate(R.layout.row, null);
+                holder = new ViewHolder();
+                holder.name = (TextView) convertView.findViewById(R.id.rowName);
+                holder.number = (TextView) convertView.findViewById(R.id.rowNumber);
+                holder.icon = (QuickContactBadge) convertView.findViewById(R.id.rowBadge);
+                convertView.setTag(holder);
+            } else {
+                holder = (ViewHolder) convertView.getTag();
+            }
+            o = items.get(position);
+            holder.name.setText(o.name);
+            holder.number.setText(o.number);
+            if (o.photo!=null){
+                holder.icon.setImageBitmap(o.photo);
+            }else {
+                holder.icon.setImageResource(R.drawable.ic_contact_picture_180_holo_dark);
+            }
+            holder.icon.assignContactFromPhone(o.number, true);
+            return convertView;
+        }
+
+        static class ViewHolder {
+            TextView name,number;
+            QuickContactBadge icon;
         }
     }
 }
