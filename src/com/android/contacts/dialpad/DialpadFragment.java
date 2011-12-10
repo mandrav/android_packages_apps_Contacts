@@ -240,6 +240,13 @@ public class DialpadFragment extends Fragment
     @Override
     public void onCreate(Bundle state) {
         super.onCreate(state);
+        Thread loadContacts = new Thread(new Runnable() {
+            public void run () {
+                mT9Search = new T9Search(getActivity());
+            }
+        });
+        loadContacts.setPriority(Thread.MAX_PRIORITY);
+        loadContacts.start();
         mPortraitOrientation = (getResources().getConfiguration().orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         mCurrentCountryIso = ContactsUtils.getCurrentCountryIso(getActivity());
 
@@ -303,7 +310,6 @@ public class DialpadFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedState) {
         View fragmentView = inflater.inflate(R.layout.dialpad_fragment, container, false);
-
         // Load up the resources for the text field.
         Resources r = getResources();
 
@@ -320,13 +326,6 @@ public class DialpadFragment extends Fragment
         }
         t9searchbadge = (QuickContactBadge) fragmentView.findViewById(R.id.t9badge);
 
-        new Thread(new Runnable() {
-            public void run () {
-                synchronized(t9search) {
-                    mT9Search = new T9Search(getActivity());
-                }
-            }
-        }).start();
         t9list = (ListView)fragmentView.findViewById(R.id.t9list);
         if (t9list!= null){
             t9list.setOnItemClickListener(this);

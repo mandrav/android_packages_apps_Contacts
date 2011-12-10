@@ -47,7 +47,6 @@ class T9Search {
     Set<ContactItem> allResults = new LinkedHashSet<ContactItem>();
     static ArrayList<ContactItem> contacts = new ArrayList<ContactItem>();
     String inputNumber;
-    static boolean firstTime = true;
 
     public T9Search(Context context) {
         mContext = context;
@@ -67,15 +66,21 @@ class T9Search {
             }
         }
         c.close();
-    }
-
-    private static Bitmap getPhoto(long id, Context mContext) {
-        Uri uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, id);
-        InputStream imageStream = ContactsContract.Contacts.openContactPhotoInputStream(mContext.getContentResolver(), uri);
-        if (imageStream == null) {
-            return null;
-        }
-        return Bitmap.createScaledBitmap(BitmapFactory.decodeStream(imageStream), 40, 40, false);
+        Thread loadPics = new Thread(new Runnable() {
+            public void run () {
+                InputStream imageStream = null;
+                Uri uri = null;
+                for (ContactItem item : contacts) {
+                    uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, item.id);
+                    imageStream = ContactsContract.Contacts.openContactPhotoInputStream(mContext.getContentResolver(), uri);
+                    if (imageStream != null) {
+                        item.photo = Bitmap.createScaledBitmap(BitmapFactory.decodeStream(imageStream), 40, 40, false);
+                    }
+                }
+            }
+        });
+        loadPics.setPriority(Thread.MIN_PRIORITY);
+        loadPics.start();
     }
 
     public static class T9SearchResult {
@@ -85,21 +90,9 @@ class T9Search {
             mTopContact = new ContactItem();
             mTopContact.name = results.get(0).name;
             mTopContact.number = results.get(0).number;
-            if (!firstTime) {
-                mTopContact.photo = results.get(0).photo;
-            } else {
-                mTopContact.photo = getPhoto(results.get(0).id,mContext);
-                new Thread(new Runnable() {
-                    public void run () {
-                        for (ContactItem item : contacts) {
-                            item.photo = getPhoto(item.id,mContext);
-                        }
-                    }
-                }).start();
-            }
+            mTopContact.photo = results.get(0).photo;
             this.mResults = results;
             mResults.remove(0);
-            firstTime = false;
         }
         public int getNumResults() {
             return mResults.size()+1;
