@@ -18,6 +18,7 @@ import android.widget.ArrayAdapter;
 import android.widget.QuickContactBadge;
 import android.widget.TextView;
 
+import com.android.contacts.ContactPhotoManager;
 import com.android.contacts.R;
 
 import java.io.InputStream;
@@ -43,7 +44,7 @@ class T9Search {
     private static final String PHONE_ID_SELECTION = Contacts.Data.MIMETYPE + " = ? ";
     private static final String[] PHONE_ID_SELECTION_ARGS = new String[] {Phone.CONTENT_ITEM_TYPE};
     private static final String PHONE_SORT = Phone.CONTACT_ID + " ASC";
-    private static final String[] CONTACT_PROJECTION = new String[] {Contacts._ID, Contacts.DISPLAY_NAME, Contacts.TIMES_CONTACTED};
+    private static final String[] CONTACT_PROJECTION = new String[] {Contacts._ID, Contacts.DISPLAY_NAME, Contacts.TIMES_CONTACTED, Contacts.PHOTO_THUMBNAIL_URI};
     private static final String CONTACT_QUERY = Contacts.HAS_PHONE_NUMBER + " > 0";
     private static final String CONTACT_SORT = Contacts._ID + " ASC";
 
@@ -84,6 +85,10 @@ class T9Search {
                 contactInfo.normalName = nameToNumber(contact.getString(1));
                 contactInfo.timesContacted = contact.getInt(2);
                 contactInfo.isSuperPrimary = phone.getInt(2) > 0;
+
+                if (!contact.isNull(3))
+                    contactInfo.photo = Uri.parse(contact.getString(3));
+
                 contacts.add(contactInfo);
 
                 if (!phone.moveToNext()) {
@@ -93,21 +98,6 @@ class T9Search {
         }
         contact.close();
         phone.close();
-        Thread loadPics = new Thread(new Runnable() {
-            public void run () {
-                InputStream imageStream = null;
-                Uri uri = null;
-                for (ContactItem item : contacts) {
-                    uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, item.id);
-                    imageStream = ContactsContract.Contacts.openContactPhotoInputStream(mContext.getContentResolver(), uri);
-                    if (imageStream != null) {
-                        item.photo = Bitmap.createScaledBitmap(BitmapFactory.decodeStream(imageStream), 40, 40, false);
-                    }
-                }
-            }
-        });
-        loadPics.setPriority(Thread.MIN_PRIORITY);
-        loadPics.start();
     }
 
     public static class T9SearchResult {
@@ -122,19 +112,11 @@ class T9Search {
         }
 
         public int getNumResults() {
-            return mResults.size()+1;
+            return mResults.size() + 1;
         }
 
-        public String getTopName() {
-            return mTopContact.name;
-        }
-
-        public String getTopNumber() {
-            return mTopContact.number;
-        }
-
-        public Bitmap getTopPhoto() {
-            return mTopContact.photo;
+        public ContactItem getTopContact() {
+            return mTopContact;
         }
 
         public ArrayList<ContactItem> getResults() {
@@ -142,8 +124,8 @@ class T9Search {
         }
     }
 
-    protected static class ContactItem {
-        Bitmap photo;
+    public static class ContactItem {
+        Uri photo;
         String name;
         String number;
         String normalNumber;
@@ -252,12 +234,13 @@ class T9Search {
 
         private ArrayList<ContactItem> items;
         private LayoutInflater menuInflate;
-        private static ContactItem o;
+        private ContactPhotoManager mPhotoLoader;
 
-        public T9Adapter(Context context, int textViewResourceId, ArrayList<ContactItem> items, LayoutInflater menuInflate) {
+        public T9Adapter(Context context, int textViewResourceId, ArrayList<ContactItem> items, LayoutInflater menuInflate, ContactPhotoManager photoLoader) {
             super(context, textViewResourceId, items);
             this.items = items;
             this.menuInflate = menuInflate;
+            mPhotoLoader = photoLoader;
         }
 
         @Override
@@ -275,15 +258,12 @@ class T9Search {
                 holder = (ViewHolder) convertView.getTag();
             }
 
-            o = items.get(position);
+            ContactItem o = items.get(position);
             holder.name.setText(o.name);
             holder.number.setText(o.number);
 
-            if (o.photo!=null) {
-                holder.icon.setImageBitmap(o.photo);
-            } else {
-                holder.icon.setImageResource(R.drawable.ic_contact_picture_180_holo_dark);
-            }
+            if (o.photo != null)
+                mPhotoLoader.loadPhoto(holder.icon, o.photo, false, true);
 
             holder.icon.assignContactFromPhone(o.number, true);
             return convertView;

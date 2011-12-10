@@ -74,6 +74,7 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 import android.widget.ViewSwitcher;
 
+import com.android.contacts.ContactPhotoManager;
 import com.android.contacts.ContactsUtils;
 import com.android.contacts.R;
 import com.android.contacts.SpecialCharSequenceMgr;
@@ -138,6 +139,7 @@ public class DialpadFragment extends Fragment
     private TextView t9search;
     private QuickContactBadge t9searchbadge;
     private T9Adapter t9adapter;
+    private ContactPhotoManager mPhotoLoader;
     private ViewSwitcher t9flipper;
 
     /**
@@ -242,6 +244,7 @@ public class DialpadFragment extends Fragment
         });
         loadContacts.start();
 
+        mPhotoLoader = ContactPhotoManager.getInstance(getActivity());
         mCurrentCountryIso = ContactsUtils.getCurrentCountryIso(getActivity());
 
         try {
@@ -730,21 +733,21 @@ public class DialpadFragment extends Fragment
             if (mT9Search != null) {
                 T9SearchResult result = mT9Search.search(mDigits.getText().toString());
                 if (result != null) {
-                    t9search.setText(result.getTopName() + " : " + result.getTopNumber());
-                    t9searchbadge.assignContactFromPhone(result.getTopNumber(), true);
-                    t9searchbadge.setTag(result.getTopNumber());
-                    if(result.getTopPhoto()!=null) {
-                        t9searchbadge.setImageBitmap(result.getTopPhoto());
-                    }else {
-                        t9searchbadge.setImageResource(R.drawable.ic_contact_picture_180_holo_dark);
-                    }
+                    T9Search.ContactItem contact = result.getTopContact();
+                    t9search.setText(contact.name + " : " + contact.number);
+                    t9searchbadge.assignContactFromPhone(contact.number, true);
+                    t9searchbadge.setTag(contact.number);
+
+                    if (contact.photo != null)
+                        mPhotoLoader.loadPhoto(t9searchbadge, contact.photo, false, true);
+
                     if (result.getNumResults()>1) {
                         t9toggle.setVisibility(View.VISIBLE);
                     }else{
                         t9toggle.setVisibility(View.GONE);
                     }
                     if (t9adapter == null){
-                        t9adapter = new T9Adapter(getActivity(), 0, result.getResults(),getActivity().getLayoutInflater());
+                        t9adapter = new T9Adapter(getActivity(), 0, result.getResults(),getActivity().getLayoutInflater(), mPhotoLoader);
                         t9adapter.setNotifyOnChange(true);
                         t9list.setAdapter(t9adapter);
                     }else{
