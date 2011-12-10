@@ -45,7 +45,7 @@ class T9Search {
     private static final String[] PHONE_PROJECTION = new String[] {Phone.NUMBER};
     private static final String PHONE_ID_SELECTION = Contacts.Data.MIMETYPE + " = ? ";
     private static final String[] PHONE_ID_SELECTION_ARGS = new String[] {Phone.CONTENT_ITEM_TYPE};
-    private static String PHONE_SORT = Contacts.TIMES_CONTACTED + " DESC";
+    private static String CONTACT_SORT = Contacts.TIMES_CONTACTED + " DESC";
     private static final String[] CONTACT_PROJECTION = new String[] {Contacts._ID, Contacts.DISPLAY_NAME};
     private final static String CONTACT_QUERY = Contacts.HAS_PHONE_NUMBER + " > 0";
 
@@ -63,7 +63,7 @@ class T9Search {
 
     void getAll() {
         initT9Map();
-        Cursor c = mContext.getContentResolver().query(Contacts.CONTENT_URI, CONTACT_PROJECTION, CONTACT_QUERY, null, null);
+        Cursor c = mContext.getContentResolver().query(Contacts.CONTENT_URI, CONTACT_PROJECTION, CONTACT_QUERY, null, CONTACT_SORT);
         while (c.moveToNext()) {
             long contactId = c.getLong(0);
             for (String num : getPhone(String.valueOf(contactId))) {
@@ -222,7 +222,7 @@ class T9Search {
     private ArrayList<String> getPhone(String contactId) {
         Uri baseUri = ContentUris.withAppendedId(Contacts.CONTENT_URI, Long.valueOf(contactId));
         Uri dataUri = Uri.withAppendedPath(baseUri, Contacts.Data.CONTENT_DIRECTORY);
-        Cursor cursor = mContext.getContentResolver().query(dataUri,PHONE_PROJECTION,PHONE_ID_SELECTION,PHONE_ID_SELECTION_ARGS,PHONE_SORT);
+        Cursor cursor = mContext.getContentResolver().query(dataUri,PHONE_PROJECTION,PHONE_ID_SELECTION,PHONE_ID_SELECTION_ARGS,null);
         ArrayList<String> allNums = new ArrayList<String>();
         if (cursor != null) {
             while (cursor.moveToNext()) {
