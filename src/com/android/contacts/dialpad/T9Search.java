@@ -188,9 +188,9 @@ class T9Search {
 
     private void initT9Map() {
         int rc = 0;
-        int cc = 0;
         for (String item : mContext.getResources().getStringArray(R.array.t9_map)) {
-            cc=0;
+            int cc = 0;
+            T9_MAP[rc] = new char[item.length()];
             for (char ch : item.toCharArray()) {
                 T9_MAP[rc][cc] = ch;
                 cc++;
@@ -199,7 +199,7 @@ class T9Search {
         }
     }
 
-    private static char[][] T9_MAP = new char[10][5];
+    private static char[][] T9_MAP = new char[10][];
 
     private static String nameToNumber(String name) {
         StringBuilder sb = new StringBuilder();
