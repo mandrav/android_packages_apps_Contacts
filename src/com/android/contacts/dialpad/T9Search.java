@@ -128,6 +128,7 @@ class T9Search {
         numberResults.clear();
         allResults.clear();
         number=number.replaceAll( "[^\\d]", "" );
+        int pos = 0;
         mSortMode = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(mContext).getString("t9_sort", "1"));
         //Go through each contact
         for (ContactItem item : contacts) {
@@ -135,8 +136,8 @@ class T9Search {
                 item.matchId = item.normalNumber.indexOf(number);
                 numberResults.add(item);
             }
-            if (getNameMatchId(item.name,number)!=item.name.length()+1) {
-                item.matchId = getNameMatchId(item.name,number);
+            if ((pos = getNameMatchId(item.name,number)) != number.length()+1) {
+                item.matchId = pos;
                 nameResults.add(item);
             }
         }
