@@ -896,18 +896,33 @@ public class DialpadFragment extends Fragment
                 }
             }
             case R.id.t9toggle: {
-                TranslateAnimation dialpadSwitch = new TranslateAnimation(
+                TranslateAnimation slidedown1 = new TranslateAnimation(
                         Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, 0.0f,
                         Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, 1.0f);
-                dialpadSwitch.setDuration(500);
-                dialpadSwitch.setInterpolator(new DecelerateInterpolator());
-                t9flipper.setOutAnimation(dialpadSwitch);
-                dialpadSwitch = new TranslateAnimation(
+                TranslateAnimation slidedown2 = new TranslateAnimation(
                         Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, 0.0f,
                         Animation.RELATIVE_TO_PARENT, -1.0f, Animation.RELATIVE_TO_PARENT, 0.0f);
-                dialpadSwitch.setDuration(500);
-                dialpadSwitch.setInterpolator(new DecelerateInterpolator());
-                t9flipper.setInAnimation(dialpadSwitch);
+                TranslateAnimation slideup1 = new TranslateAnimation(
+                        Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, 0.0f,
+                        Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, -1.0f);
+                TranslateAnimation slideup2 = new TranslateAnimation(
+                        Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, 0.0f,
+                        Animation.RELATIVE_TO_PARENT, 1.0f, Animation.RELATIVE_TO_PARENT, 0.0f);
+                slidedown2.setDuration(500);
+                slidedown2.setInterpolator(new DecelerateInterpolator());
+                slidedown1.setDuration(500);
+                slidedown1.setInterpolator(new DecelerateInterpolator());
+                slideup1.setDuration(500);
+                slideup1.setInterpolator(new DecelerateInterpolator());
+                slideup2.setDuration(500);
+                slideup2.setInterpolator(new DecelerateInterpolator());
+                if (t9toggle.isChecked()) {
+                    t9flipper.setOutAnimation(slidedown1);
+                    t9flipper.setInAnimation(slidedown2);
+                } else {
+                    t9flipper.setOutAnimation(slideup1);
+                    t9flipper.setInAnimation(slideup2);
+                }
                 t9flipper.showNext();
                 return;
             }
