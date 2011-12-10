@@ -262,6 +262,7 @@ public class DialpadFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedState) {
         View fragmentView = inflater.inflate(R.layout.dialpad_fragment, container, false);
+
         // Load up the resources for the text field.
         Resources r = getResources();
 
@@ -277,7 +278,6 @@ public class DialpadFragment extends Fragment
             t9search.setOnClickListener(this);
         }
         t9searchbadge = (QuickContactBadge) fragmentView.findViewById(R.id.t9badge);
-
         t9list = (ListView)fragmentView.findViewById(R.id.t9list);
         if (t9list!= null){
             t9list.setOnItemClickListener(this);
