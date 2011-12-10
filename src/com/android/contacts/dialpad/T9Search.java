@@ -41,10 +41,10 @@ class T9Search {
     private int mSortMode;
 
     //Phone number queries
-    private static final String[] PHONE_PROJECTION = new String[] { Phone.NUMBER};
+    private static final String[] PHONE_PROJECTION = new String[] {Phone.NUMBER};
     private static final String PHONE_ID_SELECTION = Contacts.Data.MIMETYPE + " = ? ";
     private static final String[] PHONE_ID_SELECTION_ARGS = new String[] {Phone.CONTENT_ITEM_TYPE};
-    private static final String[] CONTACT_PROJECTION = new String[] { Contacts._ID, Contacts.DISPLAY_NAME};
+    private static final String[] CONTACT_PROJECTION = new String[] {Contacts._ID, Contacts.DISPLAY_NAME};
     private final static String CONTACT_QUERY = Contacts.HAS_PHONE_NUMBER + " > 0";
 
     //Local variables
@@ -133,11 +133,11 @@ class T9Search {
         mSortMode = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(mContext).getString("t9_sort", "1"));
         //Go through each contact
         for (ContactItem item : contacts) {
-            if (item.number.replaceAll( "[^\\d]", "" ).contains(inputNumber)){
+            if (item.number.replaceAll( "[^\\d]", "" ).contains(inputNumber)) {
                 item.matchId = item.number.replaceAll( "[^\\d]", "" ).indexOf(inputNumber);
                 numberResults.add(item);
             }
-            if (getNameMatchId(item.name,inputNumber)!=item.name.length()+1){
+            if (getNameMatchId(item.name,inputNumber)!=item.name.length()+1) {
                 item.matchId = getNameMatchId(item.name,inputNumber);
                 nameResults.add(item);
             }
@@ -170,9 +170,9 @@ class T9Search {
     private static int getNameMatchId(String name, String input) {
         Pattern pattern = Pattern.compile(buildT9ContactQuery(input),Pattern.CASE_INSENSITIVE);
         Matcher m = pattern.matcher(name);
-        if (m.find()){
+        if (m.find()) {
             return m.start();
-        }else{
+        } else {
             return name.length()+1;
         }
     }
@@ -183,7 +183,7 @@ class T9Search {
         Cursor cursor = mContext.getContentResolver().query(dataUri,PHONE_PROJECTION,PHONE_ID_SELECTION,PHONE_ID_SELECTION_ARGS,null);
         ArrayList<String> allNums = new ArrayList<String>();
         if (cursor != null) {
-            while (cursor.moveToNext()){
+            while (cursor.moveToNext()) {
                 allNums.add(cursor.getString(0));
             }
             cursor.close();
@@ -257,7 +257,7 @@ class T9Search {
             o = items.get(position);
             holder.name.setText(o.name);
             holder.number.setText(o.number);
-            if (o.photo!=null){
+            if (o.photo!=null) {
                 holder.icon.setImageBitmap(o.photo);
             }else {
                 holder.icon.setImageResource(R.drawable.ic_contact_picture_180_holo_dark);
