@@ -52,7 +52,6 @@ class T9Search {
     ArrayList<ContactItem> numberResults = new ArrayList<ContactItem>();
     Set<ContactItem> allResults = new LinkedHashSet<ContactItem>();
     static ArrayList<ContactItem> contacts = new ArrayList<ContactItem>();
-    String inputNumber;
 
     public T9Search(Context context) {
         mContext = context;
@@ -68,6 +67,7 @@ class T9Search {
                 contactInfo.id = contactId;
                 contactInfo.name = c.getString(1);
                 contactInfo.number = PhoneNumberUtils.formatNumber(num);
+                contactInfo.normalNumber = num.replaceAll( "[^\\d]", "" );
                 contacts.add(contactInfo);
             }
         }
@@ -118,6 +118,7 @@ class T9Search {
         Bitmap photo;
         String name;
         String number;
+        String normalNumber;
         int matchId;
         long id;
     }
@@ -126,16 +127,16 @@ class T9Search {
         nameResults.clear();
         numberResults.clear();
         allResults.clear();
-        inputNumber=number.replaceAll( "[^\\d]", "" );
+        number=number.replaceAll( "[^\\d]", "" );
         mSortMode = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(mContext).getString("t9_sort", "1"));
         //Go through each contact
         for (ContactItem item : contacts) {
-            if (item.number.replaceAll( "[^\\d]", "" ).contains(inputNumber)) {
-                item.matchId = item.number.replaceAll( "[^\\d]", "" ).indexOf(inputNumber);
+            if (item.normalNumber.contains(number)) {
+                item.matchId = item.normalNumber.indexOf(number);
                 numberResults.add(item);
             }
-            if (getNameMatchId(item.name,inputNumber)!=item.name.length()+1) {
-                item.matchId = getNameMatchId(item.name,inputNumber);
+            if (getNameMatchId(item.name,number)!=item.name.length()+1) {
+                item.matchId = getNameMatchId(item.name,number);
                 nameResults.add(item);
             }
         }
