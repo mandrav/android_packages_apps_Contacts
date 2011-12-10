@@ -1,13 +1,5 @@
 package com.android.contacts.dialpad;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.regex.Pattern;
-
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
@@ -28,33 +20,40 @@ import android.widget.TextView;
 
 import com.android.contacts.R;
 
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 /**
- * @author shade,Danesh, pawitp
- *
+ * @author shade, Danesh, pawitp
  */
 class T9Search {
 
-    //List sort modes
+    // List sort modes
     private static final int NAME_FIRST = 1;
     private static final int NUMBER_FIRST = 2;
     private static final int DIRECT_NUMBER = 3;
-    private Context mContext;
-    private int mSortMode;
 
-    //Phone number queries
+    // Phone number queries
     private static final String[] PHONE_PROJECTION = new String[] {Phone.NUMBER};
     private static final String PHONE_ID_SELECTION = Contacts.Data.MIMETYPE + " = ? ";
     private static final String[] PHONE_ID_SELECTION_ARGS = new String[] {Phone.CONTENT_ITEM_TYPE};
-    private static String CONTACT_SORT = Contacts.TIMES_CONTACTED + " DESC";
     private static final String[] CONTACT_PROJECTION = new String[] {Contacts._ID, Contacts.DISPLAY_NAME};
-    private final static String CONTACT_QUERY = Contacts.HAS_PHONE_NUMBER + " > 0";
+    private static final String CONTACT_QUERY = Contacts.HAS_PHONE_NUMBER + " > 0";
+    private static final String CONTACT_SORT = Contacts.TIMES_CONTACTED + " DESC";
 
-    //Local variables
-    ArrayList<ContactItem> nameResults = new ArrayList<ContactItem>();
-    ArrayList<ContactItem> numberResults = new ArrayList<ContactItem>();
-    Set<ContactItem> allResults = new LinkedHashSet<ContactItem>();
-    static ArrayList<ContactItem> contacts = new ArrayList<ContactItem>();
-    static Pattern removeNonDigits = Pattern.compile("[^\\d]");
+    // Local variables
+    private Context mContext;
+    private int mSortMode;
+    private ArrayList<ContactItem> nameResults = new ArrayList<ContactItem>();
+    private ArrayList<ContactItem> numberResults = new ArrayList<ContactItem>();
+    private Set<ContactItem> allResults = new LinkedHashSet<ContactItem>();
+    private static ArrayList<ContactItem> contacts = new ArrayList<ContactItem>();
+    private static Pattern removeNonDigits = Pattern.compile("[^\\d]");
 
     public T9Search(Context context) {
         mContext = context;
@@ -95,25 +94,32 @@ class T9Search {
     }
 
     public static class T9SearchResult {
+
         private final ArrayList<ContactItem> mResults;
         private ContactItem mTopContact = new ContactItem();
+
         public T9SearchResult (final ArrayList<ContactItem> results, final Context mContext) {
             mTopContact = results.get(0);
             mResults = results;
             mResults.remove(0);
         }
+
         public int getNumResults() {
             return mResults.size()+1;
         }
+
         public String getTopName() {
             return mTopContact.name;
         }
+
         public String getTopNumber() {
             return mTopContact.number;
         }
+
         public Bitmap getTopPhoto() {
             return mTopContact.photo;
         }
+
         public ArrayList<ContactItem> getResults() {
             return mResults;
         }
@@ -136,7 +142,8 @@ class T9Search {
         number = removeNonDigits.matcher(number).replaceAll("");
         int pos = 0;
         mSortMode = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(mContext).getString("t9_sort", "1"));
-        //Go through each contact
+
+        // Go through each contact
         for (ContactItem item : contacts) {
             pos = item.normalNumber.indexOf(number);
             if (pos != -1) {
@@ -158,14 +165,14 @@ class T9Search {
         Collections.sort(nameResults, new CustomComparator());
         if (nameResults.size() > 0 || numberResults.size() > 0) {
             switch (mSortMode) {
-            case NAME_FIRST:
-                allResults.addAll(nameResults);
-                allResults.addAll(numberResults);
-                break;
-            case NUMBER_FIRST:
-            case DIRECT_NUMBER:
-                allResults.addAll(numberResults);
-                allResults.addAll(nameResults);
+                case NAME_FIRST:
+                    allResults.addAll(nameResults);
+                    allResults.addAll(numberResults);
+                    break;
+                case NUMBER_FIRST:
+                case DIRECT_NUMBER:
+                    allResults.addAll(numberResults);
+                    allResults.addAll(nameResults);
             }
             return new T9SearchResult(new ArrayList<ContactItem>(allResults), mContext);
         }
@@ -234,42 +241,6 @@ class T9Search {
         return null;
     }
 
-    private static String buildT9ContactQuery(String number) {
-        StringBuilder sb = new StringBuilder();
-        if (number != null) {
-            for (int i = 0; i < number.length(); i++) {
-                char key = number.charAt(i);
-                sb.append(numberToRegex(key));
-            }
-        }
-        return sb.toString();
-    }
-
-    private static String numberToRegex(char c) {
-        switch (c) {
-        case '2':
-            return "[2abc]";
-        case '3':
-            return "[3def]";
-        case '4':
-            return "[4ghi]";
-        case '5':
-            return "[5jkl]";
-        case '6':
-            return "[6mno]";
-        case '7':
-            return "[7pqrs]";
-        case '8':
-            return "[8tuv]";
-        case '9':
-            return "[9wxyz]";
-        case '*':
-            return "?";
-        default:
-            return String.valueOf(c);
-        }
-    }
-
     protected static class T9Adapter extends ArrayAdapter<ContactItem> {
 
         private ArrayList<ContactItem> items;
@@ -296,21 +267,27 @@ class T9Search {
             } else {
                 holder = (ViewHolder) convertView.getTag();
             }
+
             o = items.get(position);
             holder.name.setText(o.name);
             holder.number.setText(o.number);
+
             if (o.photo!=null) {
                 holder.icon.setImageBitmap(o.photo);
-            }else {
+            } else {
                 holder.icon.setImageResource(R.drawable.ic_contact_picture_180_holo_dark);
             }
+
             holder.icon.assignContactFromPhone(o.number, true);
             return convertView;
         }
 
         static class ViewHolder {
-            TextView name,number;
+            TextView name;
+            TextView number;
             QuickContactBadge icon;
         }
+
     }
+
 }
