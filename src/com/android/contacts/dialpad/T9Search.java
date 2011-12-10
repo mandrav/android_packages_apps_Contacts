@@ -1,13 +1,9 @@
 package com.android.contacts.dialpad;
 
-import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.preference.PreferenceManager;
-import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Contacts;
 import android.telephony.PhoneNumberUtils;
@@ -21,7 +17,6 @@ import android.widget.TextView;
 import com.android.contacts.ContactPhotoManager;
 import com.android.contacts.R;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -266,6 +261,8 @@ class T9Search {
 
             if (o.photo != null)
                 mPhotoLoader.loadPhoto(holder.icon, o.photo, false, true);
+            else
+                holder.icon.setImageResource(ContactPhotoManager.getDefaultAvatarResId(false, true));
 
             holder.icon.assignContactFromPhone(o.number, true);
             return convertView;

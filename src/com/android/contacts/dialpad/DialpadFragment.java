@@ -245,6 +245,7 @@ public class DialpadFragment extends Fragment
         loadContacts.start();
 
         mPhotoLoader = ContactPhotoManager.getInstance(getActivity());
+        mPhotoLoader.preloadPhotosInBackground();
         mCurrentCountryIso = ContactsUtils.getCurrentCountryIso(getActivity());
 
         try {
@@ -740,6 +741,8 @@ public class DialpadFragment extends Fragment
 
                     if (contact.photo != null)
                         mPhotoLoader.loadPhoto(mT9ResultBadge, contact.photo, false, true);
+                    else
+                        mT9ResultBadge.setImageResource(ContactPhotoManager.getDefaultAvatarResId(false, true));
 
                     if (result.getNumResults()>  1) {
                         mT9Toggle.setVisibility(View.VISIBLE);
