@@ -145,7 +145,12 @@ class T9Search {
             }
             pos = item.normalName.indexOf(number);
             if (pos != -1) {
-                item.matchId = pos;
+                int last_space = item.normalName.lastIndexOf("0", pos);
+                if (last_space == -1) {
+                    last_space = 0;
+                }
+
+                item.matchId = pos - last_space;
                 nameResults.add(item);
             }
         }
