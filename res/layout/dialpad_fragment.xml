@@ -75,13 +75,13 @@
             android:layout_centerVertical="true"
             android:focusable="true" />
         <TextView
-            android:id="@+id/t9search"
+            android:id="@+id/t9result"
             android:layout_weight="1"
             android:gravity="center"
             android:visibility="invisible"
             android:layout_width="0dp"
             android:clickable="true"
-            android:background="@drawable/t9search_state"
+            android:background="@drawable/t9result_state"
             android:layout_height="match_parent" />
         <ToggleButton
             android:id="@+id/t9toggle"

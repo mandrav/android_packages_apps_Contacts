@@ -133,14 +133,14 @@ public class DialpadFragment extends Fragment
     private ListView mDialpadChooser;
     private DialpadChooserAdapter mDialpadChooserAdapter;
 
-    private T9Search mT9Search;
-    private ToggleButton t9toggle;
-    private ListView t9list;
-    private TextView t9search;
-    private QuickContactBadge t9searchbadge;
-    private T9Adapter t9adapter;
     private ContactPhotoManager mPhotoLoader;
-    private ViewSwitcher t9flipper;
+    private T9Search mT9Search;
+    private ToggleButton mT9Toggle;
+    private ListView mT9List;
+    private TextView mT9Result;
+    private QuickContactBadge mT9ResultBadge;
+    private T9Adapter mT9Adapter;
+    private ViewSwitcher mT9Flipper;
 
     /**
      * Regular expression prohibiting manual phone call. Can be empty, which means "no rule".
@@ -274,20 +274,20 @@ public class DialpadFragment extends Fragment
         mDigits.setOnKeyListener(this);
         mDigits.setOnLongClickListener(this);
         mDigits.addTextChangedListener(this);
-        t9search = (TextView) fragmentView.findViewById(R.id.t9search);
-        if (t9search!=null){
-            t9search.setOnClickListener(this);
+        mT9Result = (TextView) fragmentView.findViewById(R.id.t9result);
+        if (mT9Result != null) {
+            mT9Result.setOnClickListener(this);
         }
-        t9searchbadge = (QuickContactBadge) fragmentView.findViewById(R.id.t9badge);
-        t9list = (ListView)fragmentView.findViewById(R.id.t9list);
-        if (t9list!= null){
-            t9list.setOnItemClickListener(this);
+        mT9ResultBadge = (QuickContactBadge) fragmentView.findViewById(R.id.t9badge);
+        mT9List = (ListView) fragmentView.findViewById(R.id.t9list);
+        if (mT9List!= null) {
+            mT9List.setOnItemClickListener(this);
         }
-        t9toggle=(ToggleButton)fragmentView.findViewById(R.id.t9toggle);
-        if (t9toggle!=null){
-            t9toggle.setOnClickListener(this);
+        mT9Toggle = (ToggleButton) fragmentView.findViewById(R.id.t9toggle);
+        if (mT9Toggle != null) {
+            mT9Toggle.setOnClickListener(this);
         }
-        t9flipper = (ViewSwitcher)fragmentView.findViewById(R.id.t9flipper);
+        mT9Flipper = (ViewSwitcher) fragmentView.findViewById(R.id.t9flipper);
         hideT9(fragmentView);
         PhoneNumberFormatter.setPhoneNumberFormattingTextWatcher(getActivity(), mDigits);
 
@@ -693,20 +693,20 @@ public class DialpadFragment extends Fragment
     }
 
     private void hideT9 (View view) {
-        if (!isPortrait()){
+        if (!isPortrait()) {
             return;
         }
         LinearLayout t9top = null;
         if (view == null) {
             t9top = (LinearLayout)getActivity().findViewById(R.id.t9topbar);
-        }else{
+        } else {
             t9top = (LinearLayout)view.findViewById(R.id.t9topbar);
         }
         LinearLayout.LayoutParams digitsLayout = (LayoutParams) mDigitsContainer.getLayoutParams();
-        if (!isT9On()){
+        if (!isT9On()) {
             digitsLayout.weight = 0.2f;
             t9top.setVisibility(View.GONE);
-        }else{
+        } else {
             digitsLayout.weight = 0.1f;
             t9top.setVisibility(View.VISIBLE);
         }
@@ -714,13 +714,13 @@ public class DialpadFragment extends Fragment
         return;
     }
 
-    private void toggleT9(){
-        if (!isT9On()){
+    private void toggleT9() {
+        if (!isT9On()) {
             hideT9(null);
             return;
         }
-        if (t9flipper.getCurrentView()==t9list){
-            t9toggle.setChecked(false);
+        if (mT9Flipper.getCurrentView() == mT9List) {
+            mT9Toggle.setChecked(false);
             animateT9();
         }
     }
@@ -734,41 +734,44 @@ public class DialpadFragment extends Fragment
                 T9SearchResult result = mT9Search.search(mDigits.getText().toString());
                 if (result != null) {
                     T9Search.ContactItem contact = result.getTopContact();
-                    t9search.setText(contact.name + " : " + contact.number);
-                    t9searchbadge.assignContactFromPhone(contact.number, true);
-                    t9searchbadge.setTag(contact.number);
+                    mT9Result.setText(contact.name + " : " + contact.number);
+                    mT9ResultBadge.assignContactFromPhone(contact.number, true);
+                    mT9ResultBadge.setTag(contact.number);
 
                     if (contact.photo != null)
-                        mPhotoLoader.loadPhoto(t9searchbadge, contact.photo, false, true);
+                        mPhotoLoader.loadPhoto(mT9ResultBadge, contact.photo, false, true);
 
-                    if (result.getNumResults()>1) {
-                        t9toggle.setVisibility(View.VISIBLE);
-                    }else{
-                        t9toggle.setVisibility(View.GONE);
+                    if (result.getNumResults()>  1) {
+                        mT9Toggle.setVisibility(View.VISIBLE);
+                    } else {
+                        mT9Toggle.setVisibility(View.GONE);
                     }
-                    if (t9adapter == null){
-                        t9adapter = new T9Adapter(getActivity(), 0, result.getResults(),getActivity().getLayoutInflater(), mPhotoLoader);
-                        t9adapter.setNotifyOnChange(true);
-                        t9list.setAdapter(t9adapter);
-                    }else{
-                        t9adapter.clear();
-                        t9adapter.addAll(result.getResults());
+
+                    if (mT9Adapter == null) {
+                        mT9Adapter = new T9Adapter(getActivity(), 0, result.getResults(),getActivity().getLayoutInflater(), mPhotoLoader);
+                        mT9Adapter.setNotifyOnChange(true);
+                        mT9List.setAdapter(mT9Adapter);
+                    } else {
+                        mT9Adapter.clear();
+                        mT9Adapter.addAll(result.getResults());
                     }
-                    if (t9list.getAdapter()==null)
-                        t9list.setAdapter(t9adapter);
-                    t9searchbadge.setVisibility(View.VISIBLE);
-                    t9search.setVisibility(View.VISIBLE);
+
+                    if (mT9List.getAdapter() == null)
+                        mT9List.setAdapter(mT9Adapter);
+
+                    mT9ResultBadge.setVisibility(View.VISIBLE);
+                    mT9Result.setVisibility(View.VISIBLE);
                 } else {
-                    t9searchbadge.setVisibility(View.INVISIBLE);
-                    t9search.setVisibility(View.INVISIBLE);
-                    t9toggle.setVisibility(View.INVISIBLE);
+                    mT9ResultBadge.setVisibility(View.INVISIBLE);
+                    mT9Result.setVisibility(View.INVISIBLE);
+                    mT9Toggle.setVisibility(View.INVISIBLE);
                     toggleT9();
                 }
             }
         } else {
-            t9searchbadge.setVisibility(View.INVISIBLE);
-            t9search.setVisibility(View.INVISIBLE);
-            t9toggle.setVisibility(View.INVISIBLE);
+            mT9ResultBadge.setVisibility(View.INVISIBLE);
+            mT9Result.setVisibility(View.INVISIBLE);
+            mT9Toggle.setVisibility(View.INVISIBLE);
             toggleT9();
         }
     }
@@ -802,14 +805,14 @@ public class DialpadFragment extends Fragment
         slideup1.setInterpolator(new DecelerateInterpolator());
         slideup2.setDuration(500);
         slideup2.setInterpolator(new DecelerateInterpolator());
-        if (t9toggle.isChecked()) {
-            t9flipper.setOutAnimation(slidedown1);
-            t9flipper.setInAnimation(slidedown2);
+        if (mT9Toggle.isChecked()) {
+            mT9Flipper.setOutAnimation(slidedown1);
+            mT9Flipper.setInAnimation(slidedown2);
         } else {
-            t9flipper.setOutAnimation(slideup1);
-            t9flipper.setInAnimation(slideup2);
+            mT9Flipper.setOutAnimation(slideup1);
+            mT9Flipper.setInAnimation(slideup2);
         }
-        t9flipper.showNext();
+        mT9Flipper.showNext();
     }
 
     private void keyPressed(int keyCode) {
@@ -932,8 +935,8 @@ public class DialpadFragment extends Fragment
                 animateT9();
                 return;
             }
-            case R.id.t9search: {
-                mDigits.setText(t9searchbadge.getTag().toString());
+            case R.id.t9result: {
+                mDigits.setText(mT9ResultBadge.getTag().toString());
                 mDigits.setSelection(mDigits.getText().length());
                 return;
             }
@@ -1335,8 +1338,8 @@ public class DialpadFragment extends Fragment
      * Handle clicks from the dialpad chooser.
      */
     public void onItemClick(AdapterView parent, View v, int position, long id) {
-        if (parent == t9list){
-            mDigits.setText(t9adapter.getItem(position).number);
+        if (parent == mT9List) {
+            mDigits.setText(mT9Adapter.getItem(position).number);
             mDigits.setSelection(mDigits.getText().length());
             return;
         }
