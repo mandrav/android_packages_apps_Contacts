@@ -730,7 +730,7 @@ public class DialpadFragment extends Fragment
         if (length > 0) {
             if (mT9Search != null) {
                 T9SearchResult result = mT9Search.search(mDigits.getText().toString());
-                if (result != null && result.getNumResults() > 0) {
+                if (result != null) {
                     t9search.setText(result.getTopName() + " : " + result.getTopNumber());
                     t9searchbadge.assignContactFromPhone(result.getTopNumber(), true);
                     t9searchbadge.setTag(result.getTopNumber());

@@ -6,9 +6,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import com.android.contacts.R;
+
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
@@ -26,6 +25,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.QuickContactBadge;
 import android.widget.TextView;
+
+import com.android.contacts.R;
 
 /**
  * @author shade,Danesh, pawitp
@@ -52,6 +53,7 @@ class T9Search {
     ArrayList<ContactItem> numberResults = new ArrayList<ContactItem>();
     Set<ContactItem> allResults = new LinkedHashSet<ContactItem>();
     static ArrayList<ContactItem> contacts = new ArrayList<ContactItem>();
+    static Pattern removeNonDigits = Pattern.compile("[^\\d]");
 
     public T9Search(Context context) {
         mContext = context;
@@ -68,7 +70,7 @@ class T9Search {
                 contactInfo.id = contactId;
                 contactInfo.name = c.getString(1);
                 contactInfo.number = PhoneNumberUtils.formatNumber(num);
-                contactInfo.normalNumber = num.replaceAll( "[^\\d]", "" );
+                contactInfo.normalNumber = removeNonDigits.matcher(num).replaceAll("");
                 contactInfo.normalName = nameToNumber(c.getString(1));
                 contacts.add(contactInfo);
             }
@@ -130,7 +132,7 @@ class T9Search {
         nameResults.clear();
         numberResults.clear();
         allResults.clear();
-        number=number.replaceAll( "[^\\d]", "" );
+        number = removeNonDigits.matcher(number).replaceAll("");
         int pos = 0;
         mSortMode = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(mContext).getString("t9_sort", "1"));
         //Go through each contact
@@ -168,16 +170,6 @@ class T9Search {
         @Override
         public int compare(ContactItem lhs, ContactItem rhs) {
             return Integer.compare(lhs.matchId,rhs.matchId);
-        }
-    }
-
-    private static int getNameMatchId(String name, String input) {
-        Pattern pattern = Pattern.compile(buildT9ContactQuery(input),Pattern.CASE_INSENSITIVE);
-        Matcher m = pattern.matcher(name);
-        if (m.find()) {
-            return m.start();
-        } else {
-            return name.length()+1;
         }
     }
 
@@ -220,6 +212,7 @@ class T9Search {
         }
         return sb.toString();
     }
+
     private ArrayList<String> getPhone(String contactId) {
         Uri baseUri = ContentUris.withAppendedId(Contacts.CONTENT_URI, Long.valueOf(contactId));
         Uri dataUri = Uri.withAppendedPath(baseUri, Contacts.Data.CONTENT_DIRECTORY);
