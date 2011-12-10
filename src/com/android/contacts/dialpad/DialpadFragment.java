@@ -46,9 +46,11 @@ import android.telephony.PhoneNumberUtils;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.text.Editable;
+import android.text.Spannable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.DialerKeyListener;
+import android.text.style.BackgroundColorSpan;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -735,7 +737,20 @@ public class DialpadFragment extends Fragment
                 T9SearchResult result = mT9Search.search(mDigits.getText().toString());
                 if (result != null) {
                     T9Search.ContactItem contact = result.getTopContact();
-                    mT9Result.setText(contact.name + " : " + contact.number);
+                    mT9Result.setText(contact.name + " : " + contact.normalNumber, TextView.BufferType.SPANNABLE);
+                    Spannable WordtoSpan = (Spannable) mT9Result.getText();
+                    int normalizedLength = T9Search.sRemoveNonDigits.matcher(mDigits.getText()).replaceAll("").length();
+                    if (contact.nameMatchId != -1) {
+                        int nameStart = contact.nameMatchId;
+                        if (contact.normalName.contains("0"))
+                            nameStart = contact.normalName.indexOf("0") + nameStart;
+                        WordtoSpan.setSpan(new BackgroundColorSpan(0xFFFFFF00), nameStart, nameStart + normalizedLength, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+                    }
+                    if (contact.numberMatchId != -1) {
+                        int numberStart = contact.name.length() + 3 + contact.numberMatchId;
+                        WordtoSpan.setSpan(new BackgroundColorSpan(0xFFFFFF00), numberStart, numberStart + normalizedLength, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+                    }
+                    mT9Result.setText(WordtoSpan);
                     mT9ResultBadge.assignContactFromPhone(contact.number, true);
                     mT9ResultBadge.setTag(contact.number);
 

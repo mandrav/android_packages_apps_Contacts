@@ -51,7 +51,7 @@ class T9Search {
     private Set<ContactItem> mAllResults = new LinkedHashSet<ContactItem>();
     private ArrayList<ContactItem> mContacts = new ArrayList<ContactItem>();
     private static char[][] sT9Map;
-    private static Pattern sRemoveNonDigits = Pattern.compile("[^\\d]");
+    protected static Pattern sRemoveNonDigits = Pattern.compile("[^\\d]");
 
     public T9Search(Context context) {
         mContext = context;
@@ -83,7 +83,8 @@ class T9Search {
                 contactInfo.normalName = nameToNumber(contact.getString(1));
                 contactInfo.timesContacted = contact.getInt(2);
                 contactInfo.isSuperPrimary = phone.getInt(2) > 0;
-
+                contactInfo.numberMatchId = -1;
+                contactInfo.nameMatchId = -1;
                 if (!contact.isNull(3))
                     contactInfo.photo = Uri.parse(contact.getString(3));
 
@@ -129,7 +130,8 @@ class T9Search {
         String normalNumber;
         String normalName;
         int timesContacted;
-        int matchId;
+        int nameMatchId;
+        int numberMatchId;
         long id;
         boolean isSuperPrimary;
     }
@@ -144,9 +146,11 @@ class T9Search {
 
         // Go through each contact
         for (ContactItem item : mContacts) {
+            item.numberMatchId = -1;
+            item.nameMatchId = -1;
             pos = item.normalNumber.indexOf(number);
             if (pos != -1) {
-                item.matchId = pos;
+                item.numberMatchId = pos;
                 mNumberResults.add(item);
             }
             pos = item.normalName.indexOf(number);
@@ -155,13 +159,12 @@ class T9Search {
                 if (last_space == -1) {
                     last_space = 0;
                 }
-
-                item.matchId = pos - last_space;
+                item.nameMatchId = pos - last_space;
                 mNameResults.add(item);
             }
         }
-        Collections.sort(mNumberResults, new CustomComparator());
-        Collections.sort(mNameResults, new CustomComparator());
+        Collections.sort(mNumberResults, new NumberComparator());
+        Collections.sort(mNameResults, new NameComparator());
         if (mNameResults.size() > 0 || mNumberResults.size() > 0) {
             switch (mSortMode) {
                 case NAME_FIRST:
@@ -178,10 +181,20 @@ class T9Search {
         return null;
     }
 
-    public static class CustomComparator implements Comparator<ContactItem> {
+    public static class NameComparator implements Comparator<ContactItem> {
         @Override
         public int compare(ContactItem lhs, ContactItem rhs) {
-            int ret = Integer.compare(lhs.matchId, rhs.matchId);
+            int ret = Integer.compare(lhs.nameMatchId, rhs.nameMatchId);
+            if (ret == 0) ret = Integer.compare(rhs.timesContacted, lhs.timesContacted);
+            if (ret == 0) ret = Boolean.compare(rhs.isSuperPrimary, lhs.isSuperPrimary);
+            return ret;
+        }
+    }
+
+    public static class NumberComparator implements Comparator<ContactItem> {
+        @Override
+        public int compare(ContactItem lhs, ContactItem rhs) {
+            int ret = Integer.compare(lhs.numberMatchId, rhs.numberMatchId);
             if (ret == 0) ret = Integer.compare(rhs.timesContacted, lhs.timesContacted);
             if (ret == 0) ret = Boolean.compare(rhs.isSuperPrimary, lhs.isSuperPrimary);
             return ret;
