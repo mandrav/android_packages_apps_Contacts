@@ -138,7 +138,6 @@ public class DialpadFragment extends Fragment
     private ListView t9list;
     private TextView t9search;
     private QuickContactBadge t9searchbadge;
-    private boolean mPortraitOrientation;
     private T9Adapter t9adapter;
     private ViewSwitcher t9flipper;
 
@@ -244,7 +243,7 @@ public class DialpadFragment extends Fragment
         });
         loadContacts.setPriority(Thread.MAX_PRIORITY);
         loadContacts.start();
-        mPortraitOrientation = (getResources().getConfiguration().orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         mCurrentCountryIso = ContactsUtils.getCurrentCountryIso(getActivity());
 
         try {
@@ -512,7 +511,6 @@ public class DialpadFragment extends Fragment
     public void onResume() {
         super.onResume();
 
-        mPortraitOrientation = (getResources().getConfiguration().orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         searchContacts();
         hideT9(null);
         // Query the last dialed number. Do it first because hitting
@@ -583,7 +581,7 @@ public class DialpadFragment extends Fragment
     @Override
     public void onPause() {
         super.onPause();
-        if (mPortraitOrientation) {
+        if (isPortrait()) {
             toggleT9();
         }
         // Stop listening for phone state changes.
@@ -694,7 +692,7 @@ public class DialpadFragment extends Fragment
     }
 
     private void hideT9 (View view) {
-        if (!mPortraitOrientation){
+        if (!isPortrait()){
             return;
         }
         LinearLayout t9top = null;
@@ -704,7 +702,7 @@ public class DialpadFragment extends Fragment
             t9top = (LinearLayout)view.findViewById(R.id.t9topbar);
         }
         LinearLayout.LayoutParams digitsLayout = (LayoutParams) mDigitsContainer.getLayoutParams();
-        if (!PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean("t9_state", false)){
+        if (!isT9On()){
             digitsLayout.weight = 0.2f;
             t9top.setVisibility(View.GONE);
         }else{
@@ -716,7 +714,7 @@ public class DialpadFragment extends Fragment
     }
 
     private void toggleT9(){
-        if (!PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean("t9_state", false)){
+        if (!isT9On()){
             hideT9(null);
             return;
         }
@@ -773,7 +771,7 @@ public class DialpadFragment extends Fragment
     }
 
     private void searchContacts() {
-        if (!mPortraitOrientation || !PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean("t9_state", false))
+        if (!isPortrait() || !isT9On())
             return;
         final int length = mDigits.length();
         if (length > 0) {
@@ -788,10 +786,19 @@ public class DialpadFragment extends Fragment
         }
     }
 
+    private boolean isPortrait() {
+        return getResources().getConfiguration().orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+    }
+
+    private boolean isT9On() {
+        return PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean("t9_state", false);
+    }
+
     private void keyPressed(int keyCode) {
         mHaptic.vibrate();
         KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
         mDigits.onKeyDown(keyCode, event);
+
         // If the cursor is at the end of the text we hide it.
         final int length = mDigits.length();
         searchContacts();
