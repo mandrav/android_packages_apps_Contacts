@@ -744,11 +744,11 @@ public class DialpadFragment extends Fragment
                         int nameStart = contact.nameMatchId;
                         if (contact.normalName.contains("0"))
                             nameStart = contact.normalName.indexOf("0") + nameStart;
-                        WordtoSpan.setSpan(new BackgroundColorSpan(android.R.color.holo_blue_dark), nameStart, nameStart + normalizedLength, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+                        WordtoSpan.setSpan(new BackgroundColorSpan(getResources().getColor(android.R.color.holo_blue_dark)), nameStart, nameStart + normalizedLength, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
                     }
                     if (contact.numberMatchId != -1) {
                         int numberStart = contact.name.length() + 3 + contact.numberMatchId;
-                        WordtoSpan.setSpan(new BackgroundColorSpan(android.R.color.holo_blue_dark), numberStart, numberStart + normalizedLength, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+                        WordtoSpan.setSpan(new BackgroundColorSpan(getResources().getColor(android.R.color.holo_blue_dark)), numberStart, numberStart + normalizedLength, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
                     }
                     mT9Result.setText(WordtoSpan);
                     mT9ResultBadge.assignContactFromPhone(contact.number, true);
@@ -954,8 +954,7 @@ public class DialpadFragment extends Fragment
                 return;
             }
             case R.id.t9result: {
-                mDigits.setText(mT9ResultBadge.getTag().toString());
-                mDigits.setSelection(mDigits.getText().length());
+                setFormattedDigits(mT9ResultBadge.getTag().toString(),null);
                 return;
             }
         }
@@ -1357,8 +1356,7 @@ public class DialpadFragment extends Fragment
      */
     public void onItemClick(AdapterView parent, View v, int position, long id) {
         if (parent == mT9List) {
-            mDigits.setText(mT9Adapter.getItem(position).number);
-            mDigits.setSelection(mDigits.getText().length());
+            setFormattedDigits(mT9Adapter.getItem(position).number,null);
             return;
         }
         DialpadChooserAdapter.ChoiceItem item =
