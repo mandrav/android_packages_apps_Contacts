@@ -744,11 +744,11 @@ public class DialpadFragment extends Fragment
                         int nameStart = contact.nameMatchId;
                         if (contact.normalName.contains("0"))
                             nameStart = contact.normalName.indexOf("0") + nameStart;
-                        WordtoSpan.setSpan(new BackgroundColorSpan(0xFFFFFF00), nameStart, nameStart + normalizedLength, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+                        WordtoSpan.setSpan(new BackgroundColorSpan(android.R.color.holo_blue_dark), nameStart, nameStart + normalizedLength, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
                     }
                     if (contact.numberMatchId != -1) {
                         int numberStart = contact.name.length() + 3 + contact.numberMatchId;
-                        WordtoSpan.setSpan(new BackgroundColorSpan(0xFFFFFF00), numberStart, numberStart + normalizedLength, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+                        WordtoSpan.setSpan(new BackgroundColorSpan(android.R.color.holo_blue_dark), numberStart, numberStart + normalizedLength, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
                     }
                     mT9Result.setText(WordtoSpan);
                     mT9ResultBadge.assignContactFromPhone(contact.number, true);
