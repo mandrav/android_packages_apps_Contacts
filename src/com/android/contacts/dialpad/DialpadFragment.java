@@ -719,7 +719,7 @@ public class DialpadFragment extends Fragment
         }
         if (t9flipper.getCurrentView()==t9list){
             t9toggle.setChecked(false);
-            t9flipper.showNext();
+            animateT9();
         }
     }
 
@@ -777,6 +777,37 @@ public class DialpadFragment extends Fragment
 
     private boolean isT9On() {
         return PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean("t9_state", false);
+    }
+
+    private void animateT9() {
+        TranslateAnimation slidedown1 = new TranslateAnimation(
+                Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, 0.0f,
+                Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, 1.0f);
+        TranslateAnimation slidedown2 = new TranslateAnimation(
+                Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, 0.0f,
+                Animation.RELATIVE_TO_PARENT, -1.0f, Animation.RELATIVE_TO_PARENT, 0.0f);
+        TranslateAnimation slideup1 = new TranslateAnimation(
+                Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, 0.0f,
+                Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, -1.0f);
+        TranslateAnimation slideup2 = new TranslateAnimation(
+                Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, 0.0f,
+                Animation.RELATIVE_TO_PARENT, 1.0f, Animation.RELATIVE_TO_PARENT, 0.0f);
+        slidedown2.setDuration(500);
+        slidedown2.setInterpolator(new DecelerateInterpolator());
+        slidedown1.setDuration(500);
+        slidedown1.setInterpolator(new DecelerateInterpolator());
+        slideup1.setDuration(500);
+        slideup1.setInterpolator(new DecelerateInterpolator());
+        slideup2.setDuration(500);
+        slideup2.setInterpolator(new DecelerateInterpolator());
+        if (t9toggle.isChecked()) {
+            t9flipper.setOutAnimation(slidedown1);
+            t9flipper.setInAnimation(slidedown2);
+        } else {
+            t9flipper.setOutAnimation(slideup1);
+            t9flipper.setInAnimation(slideup2);
+        }
+        t9flipper.showNext();
     }
 
     private void keyPressed(int keyCode) {
@@ -896,34 +927,7 @@ public class DialpadFragment extends Fragment
                 }
             }
             case R.id.t9toggle: {
-                TranslateAnimation slidedown1 = new TranslateAnimation(
-                        Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, 0.0f,
-                        Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, 1.0f);
-                TranslateAnimation slidedown2 = new TranslateAnimation(
-                        Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, 0.0f,
-                        Animation.RELATIVE_TO_PARENT, -1.0f, Animation.RELATIVE_TO_PARENT, 0.0f);
-                TranslateAnimation slideup1 = new TranslateAnimation(
-                        Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, 0.0f,
-                        Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, -1.0f);
-                TranslateAnimation slideup2 = new TranslateAnimation(
-                        Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, 0.0f,
-                        Animation.RELATIVE_TO_PARENT, 1.0f, Animation.RELATIVE_TO_PARENT, 0.0f);
-                slidedown2.setDuration(500);
-                slidedown2.setInterpolator(new DecelerateInterpolator());
-                slidedown1.setDuration(500);
-                slidedown1.setInterpolator(new DecelerateInterpolator());
-                slideup1.setDuration(500);
-                slideup1.setInterpolator(new DecelerateInterpolator());
-                slideup2.setDuration(500);
-                slideup2.setInterpolator(new DecelerateInterpolator());
-                if (t9toggle.isChecked()) {
-                    t9flipper.setOutAnimation(slidedown1);
-                    t9flipper.setInAnimation(slidedown2);
-                } else {
-                    t9flipper.setOutAnimation(slideup1);
-                    t9flipper.setInAnimation(slideup2);
-                }
-                t9flipper.showNext();
+                animateT9();
                 return;
             }
             case R.id.t9search: {
