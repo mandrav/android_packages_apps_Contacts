@@ -28,7 +28,7 @@ import android.widget.QuickContactBadge;
 import android.widget.TextView;
 
 /**
- * @author shade,Danesh
+ * @author shade,Danesh, pawitp
  *
  */
 class T9Search {
@@ -59,6 +59,7 @@ class T9Search {
     }
 
     void getAll() {
+        initT9Map();
         Cursor c = mContext.getContentResolver().query(Contacts.CONTENT_URI, CONTACT_PROJECTION, CONTACT_QUERY, null, null);
         while (c.moveToNext()) {
             long contactId = c.getLong(0);
@@ -68,6 +69,7 @@ class T9Search {
                 contactInfo.name = c.getString(1);
                 contactInfo.number = PhoneNumberUtils.formatNumber(num);
                 contactInfo.normalNumber = num.replaceAll( "[^\\d]", "" );
+                contactInfo.normalName = nameToNumber(c.getString(1));
                 contacts.add(contactInfo);
             }
         }
@@ -119,6 +121,7 @@ class T9Search {
         String name;
         String number;
         String normalNumber;
+        String normalName;
         int matchId;
         long id;
     }
@@ -132,11 +135,13 @@ class T9Search {
         mSortMode = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(mContext).getString("t9_sort", "1"));
         //Go through each contact
         for (ContactItem item : contacts) {
-            if (item.normalNumber.contains(number)) {
-                item.matchId = item.normalNumber.indexOf(number);
+            pos = item.normalNumber.indexOf(number);
+            if (pos != -1) {
+                item.matchId = pos;
                 numberResults.add(item);
             }
-            if ((pos = getNameMatchId(item.name,number)) != number.length()+1) {
+            pos = item.normalName.indexOf(number);
+            if (pos != -1) {
                 item.matchId = pos;
                 nameResults.add(item);
             }
@@ -176,6 +181,45 @@ class T9Search {
         }
     }
 
+    private void initT9Map() {
+        int rc = 0;
+        int cc = 0;
+        for (String item : mContext.getResources().getStringArray(R.array.t9_map)) {
+            cc=0;
+            for (char ch : item.toCharArray()) {
+                T9_MAP[rc][cc] = ch;
+                cc++;
+            }
+            rc++;
+        }
+    }
+
+    private static char[][] T9_MAP = new char[10][5];
+
+    private static String nameToNumber(String name) {
+        StringBuilder sb = new StringBuilder();
+        int len = name.length();
+        for (int i = 0; i < len; i++) {
+            boolean matched = false;
+            char ch = Character.toLowerCase(name.charAt(i));
+            for (char[] row : T9_MAP) {
+                for (char a : row) {
+                    if (ch == a) {
+                        matched = true;
+                        sb.append(row[0]);
+                        break;
+                    }
+                }
+                if (matched) {
+                    break;
+                }
+            }
+            if (!matched) {
+                sb.append(T9_MAP[0][0]);
+            }
+        }
+        return sb.toString();
+    }
     private ArrayList<String> getPhone(String contactId) {
         Uri baseUri = ContentUris.withAppendedId(Contacts.CONTENT_URI, Long.valueOf(contactId));
         Uri dataUri = Uri.withAppendedPath(baseUri, Contacts.Data.CONTENT_DIRECTORY);

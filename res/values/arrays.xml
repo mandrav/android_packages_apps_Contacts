@@ -27,4 +27,17 @@
 		<item>2</item>
 		<item>3</item>
 	</string-array>
+	<string-array
+	   name="t9_map">
+       <item>0</item>
+       <item>1</item>
+       <item>2abc</item>
+       <item>3def</item>
+       <item>4ghi</item>
+       <item>5jkl</item>
+       <item>6mno</item>
+       <item>7pqrs</item>
+       <item>8tuv</item>
+       <item>9wxyz</item>
+	</string-array>
 </resources>
