@@ -17,13 +17,11 @@
 	<string-array name="t9_sort_entries">
 		<item>Name matches first</item>
 		<item>Number matches first</item>
-		<item>Direct phone number match</item>
 	</string-array>
 	<string-array name="t9_sort_values"
 		translatable="false">
 		<item>1</item>
 		<item>2</item>
-		<item>3</item>
 	</string-array>
 	<string-array name="t9_map">
        <item>0</item>

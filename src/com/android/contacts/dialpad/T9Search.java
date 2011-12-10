@@ -32,7 +32,6 @@ class T9Search {
     // List sort modes
     private static final int NAME_FIRST = 1;
     private static final int NUMBER_FIRST = 2;
-    private static final int DIRECT_NUMBER = 3;
 
     // Phone number queries
     private static final String[] PHONE_PROJECTION = new String[] {Phone.NUMBER, Phone.CONTACT_ID, Phone.IS_SUPER_PRIMARY};
@@ -83,8 +82,6 @@ class T9Search {
                 contactInfo.normalName = nameToNumber(contact.getString(1));
                 contactInfo.timesContacted = contact.getInt(2);
                 contactInfo.isSuperPrimary = phone.getInt(2) > 0;
-                contactInfo.numberMatchId = -1;
-                contactInfo.nameMatchId = -1;
                 if (!contact.isNull(3))
                     contactInfo.photo = Uri.parse(contact.getString(3));
 
@@ -172,7 +169,6 @@ class T9Search {
                     mAllResults.addAll(mNumberResults);
                     break;
                 case NUMBER_FIRST:
-                case DIRECT_NUMBER:
                     mAllResults.addAll(mNumberResults);
                     mAllResults.addAll(mNameResults);
             }
