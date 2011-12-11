@@ -740,11 +740,10 @@ public class DialpadFragment extends Fragment
                     T9Search.ContactItem contact = result.getTopContact();
                     mT9Result.setText(contact.name + " : " + contact.normalNumber, TextView.BufferType.SPANNABLE);
                     Spannable WordtoSpan = (Spannable) mT9Result.getText();
-                    int normalizedLength = T9Search.sRemoveNonDigits.matcher(mDigits.getText()).replaceAll("").length();
+                    String normalizedInput = T9Search.sRemoveNonDigits.matcher(mDigits.getText()).replaceAll("");
+                    int normalizedLength = normalizedInput.length();
                     if (contact.nameMatchId != -1) {
-                        int nameStart = contact.nameMatchId;
-                        if (contact.normalName.contains("0"))
-                            nameStart = contact.normalName.indexOf("0") + nameStart;
+                        int nameStart = contact.normalName.indexOf(normalizedInput);
                         WordtoSpan.setSpan(new BackgroundColorSpan(getResources().getColor(android.R.color.holo_blue_dark)), nameStart, nameStart + normalizedLength, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
                     }
                     if (contact.numberMatchId != -1) {
