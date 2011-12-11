@@ -50,7 +50,7 @@ import android.text.Spannable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.DialerKeyListener;
-import android.text.style.BackgroundColorSpan;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -744,11 +744,11 @@ public class DialpadFragment extends Fragment
                     int normalizedLength = normalizedInput.length();
                     if (contact.nameMatchId != -1) {
                         int nameStart = contact.normalName.indexOf(normalizedInput);
-                        WordtoSpan.setSpan(new BackgroundColorSpan(getResources().getColor(android.R.color.holo_blue_dark)), nameStart, nameStart + normalizedLength, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+                        WordtoSpan.setSpan(new ForegroundColorSpan(getResources().getColor(android.R.color.holo_blue_dark)), nameStart, nameStart + normalizedLength, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
                     }
                     if (contact.numberMatchId != -1) {
                         int numberStart = contact.name.length() + 3 + contact.numberMatchId;
-                        WordtoSpan.setSpan(new BackgroundColorSpan(getResources().getColor(android.R.color.holo_blue_dark)), numberStart, numberStart + normalizedLength, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+                        WordtoSpan.setSpan(new ForegroundColorSpan(getResources().getColor(android.R.color.holo_blue_dark)), numberStart, numberStart + normalizedLength, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
                     }
                     mT9Result.setText(WordtoSpan);
                     mT9ResultBadge.assignContactFromPhone(contact.number, true);
