@@ -51,6 +51,7 @@ class T9Search {
     private ArrayList<ContactItem> mContacts = new ArrayList<ContactItem>();
     private static char[][] sT9Map;
     protected static Pattern sRemoveNonDigits = Pattern.compile("[^\\d]");
+    private static String prevInput = "previous_input";
 
     public T9Search(Context context) {
         mContext = context;
@@ -136,13 +137,11 @@ class T9Search {
     public T9SearchResult search(String number) {
         mNameResults.clear();
         mNumberResults.clear();
-        mAllResults.clear();
         number = sRemoveNonDigits.matcher(number).replaceAll("");
         int pos = 0;
         mSortMode = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(mContext).getString("t9_sort", "1"));
-
         // Go through each contact
-        for (ContactItem item : mContacts) {
+        for (ContactItem item : (number.length() == 1 || number.length() < prevInput.length() ? mContacts : mAllResults)) {
             item.numberMatchId = -1;
             item.nameMatchId = -1;
             pos = item.normalNumber.indexOf(number);
@@ -160,6 +159,8 @@ class T9Search {
                 mNameResults.add(item);
             }
         }
+        mAllResults.clear();
+        prevInput = number;
         Collections.sort(mNumberResults, new NumberComparator());
         Collections.sort(mNameResults, new NameComparator());
         if (mNameResults.size() > 0 || mNumberResults.size() > 0) {
