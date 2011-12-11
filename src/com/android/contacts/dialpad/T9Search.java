@@ -50,7 +50,6 @@ class T9Search {
     private Set<ContactItem> mAllResults = new LinkedHashSet<ContactItem>();
     private ArrayList<ContactItem> mContacts = new ArrayList<ContactItem>();
     private static char[][] sT9Map;
-    protected static Pattern sRemoveNonDigits = Pattern.compile("[^\\d]");
     private static String prevInput = "previous_input";
 
     public T9Search(Context context) {
@@ -79,7 +78,7 @@ class T9Search {
                 contactInfo.id = contactId;
                 contactInfo.name = contact.getString(1);
                 contactInfo.number = PhoneNumberUtils.formatNumber(num);
-                contactInfo.normalNumber = sRemoveNonDigits.matcher(num).replaceAll("");
+                contactInfo.normalNumber = removeNonDigits(num);
                 contactInfo.normalName = nameToNumber(contact.getString(1));
                 contactInfo.timesContacted = contact.getInt(2);
                 contactInfo.isSuperPrimary = phone.getInt(2) > 0;
@@ -137,7 +136,7 @@ class T9Search {
     public T9SearchResult search(String number) {
         mNameResults.clear();
         mNumberResults.clear();
-        number = sRemoveNonDigits.matcher(number).replaceAll("");
+        number = removeNonDigits(number);
         int pos = 0;
         mSortMode = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(mContext).getString("t9_sort", "1"));
         // Go through each contact
@@ -232,6 +231,18 @@ class T9Search {
             }
             if (!matched) {
                 sb.append(sT9Map[0][0]);
+            }
+        }
+        return sb.toString();
+    }
+
+    public static String removeNonDigits(String number) {
+        int len = number.length();
+        StringBuilder sb = new StringBuilder(len);
+        for (int i = 0; i < len; i++) {
+            char ch = number.charAt(i);
+            if (ch >= '0' && ch <= '9') {
+                sb.append(ch);
             }
         }
         return sb.toString();

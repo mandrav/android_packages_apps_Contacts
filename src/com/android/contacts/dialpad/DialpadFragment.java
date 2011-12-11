@@ -740,7 +740,7 @@ public class DialpadFragment extends Fragment
                     T9Search.ContactItem contact = result.getTopContact();
                     mT9Result.setText(contact.name + " : " + contact.normalNumber, TextView.BufferType.SPANNABLE);
                     Spannable WordtoSpan = (Spannable) mT9Result.getText();
-                    String normalizedInput = T9Search.sRemoveNonDigits.matcher(mDigits.getText()).replaceAll("");
+                    String normalizedInput = T9Search.removeNonDigits(mDigits.getText().toString());
                     int normalizedLength = normalizedInput.length();
                     if (contact.nameMatchId != -1) {
                         int nameStart = contact.normalName.indexOf(normalizedInput);
