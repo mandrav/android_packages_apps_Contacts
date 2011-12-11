@@ -233,10 +233,13 @@ class T9Search {
     }
 
     public static String removeNonDigits(String number) {
-        StringBuilder sb = new StringBuilder();
-        for (char ch : number.toCharArray()) {
-            if (Character.isDigit(ch))
+        int len = number.length();
+        StringBuilder sb = new StringBuilder(len);
+        for (int i = 0; i < len; i++) {
+            char ch = number.charAt(i);
+            if (ch >= '0' && ch <= '9') {
                 sb.append(ch);
+            }
         }
         return sb.toString();
     }
