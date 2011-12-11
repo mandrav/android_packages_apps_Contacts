@@ -515,9 +515,14 @@ public class DialpadFragment extends Fragment
     public void onResume() {
         super.onResume();
 
-        if (isPortrait() && mT9Toggle.isChecked())
-            return;
-
+        if (isPortrait() && isT9On()) {
+            if (mT9Toggle.isChecked()){
+                return;
+            } else {
+                searchContacts();
+            }
+        }
+        hideT9(null);
         // Query the last dialed number. Do it first because hitting
         // the DB is 'slow'. This call is asynchronous.
         queryLastOutgoingCall();
@@ -586,7 +591,7 @@ public class DialpadFragment extends Fragment
     @Override
     public void onPause() {
         super.onPause();
-        if (!isPortrait()) {
+        if (!isPortrait() && isT9On()) {
             toggleT9();
         }
         // Stop listening for phone state changes.
@@ -696,6 +701,10 @@ public class DialpadFragment extends Fragment
         return intent;
     }
 
+    /**
+     * Hides the topresult layout
+     * Needed to reclaim the space when T9 is off.
+     */
     private void hideT9 (View view) {
         if (!isPortrait()) {
             return;
@@ -718,6 +727,9 @@ public class DialpadFragment extends Fragment
         return;
     }
 
+    /**
+     * Toggles between expanded list and dialpad
+     */
     private void toggleT9() {
         if (!isT9On()) {
             hideT9(null);
@@ -729,6 +741,10 @@ public class DialpadFragment extends Fragment
         }
     }
 
+    /**
+     * Initiates a search for the dialed digits
+     * Toggles view visibility based on results
+     */
     private void searchContacts() {
         if (!isPortrait() || !isT9On())
             return;
@@ -797,10 +813,16 @@ public class DialpadFragment extends Fragment
         return getResources().getConfiguration().orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
     }
 
+    /**
+     * Returns preference value for T9Dialer
+     */
     private boolean isT9On() {
         return PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean("t9_state", false);
     }
 
+    /**
+     * Animates the dialpad/listview
+     */
     private void animateT9() {
         TranslateAnimation slidedown1 = new TranslateAnimation(
                 Animation.RELATIVE_TO_PARENT, 0.0f, Animation.RELATIVE_TO_PARENT, 0.0f,
