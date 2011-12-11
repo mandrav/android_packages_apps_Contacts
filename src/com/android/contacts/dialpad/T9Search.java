@@ -150,11 +150,7 @@ class T9Search {
             }
             pos = item.normalName.indexOf(number);
             if (pos != -1) {
-                int last_space = item.normalName.lastIndexOf("0", pos);
-                if (last_space == -1) {
-                    last_space = 0;
-                }
-                item.nameMatchId = pos - last_space;
+                item.nameMatchId = pos;
                 mNameResults.add(item);
             }
         }
@@ -237,13 +233,10 @@ class T9Search {
     }
 
     public static String removeNonDigits(String number) {
-        int len = number.length();
-        StringBuilder sb = new StringBuilder(len);
-        for (int i = 0; i < len; i++) {
-            char ch = number.charAt(i);
-            if (ch >= '0' && ch <= '9') {
+        StringBuilder sb = new StringBuilder();
+        for (char ch : number.toCharArray()) {
+            if (Character.isDigit(ch))
                 sb.append(ch);
-            }
         }
         return sb.toString();
     }
