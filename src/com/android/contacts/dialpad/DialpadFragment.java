@@ -515,8 +515,9 @@ public class DialpadFragment extends Fragment
     public void onResume() {
         super.onResume();
 
-        searchContacts();
-        hideT9(null);
+        if (isPortrait() && mT9Toggle.isChecked())
+            return;
+
         // Query the last dialed number. Do it first because hitting
         // the DB is 'slow'. This call is asynchronous.
         queryLastOutgoingCall();
@@ -585,7 +586,7 @@ public class DialpadFragment extends Fragment
     @Override
     public void onPause() {
         super.onPause();
-        if (isPortrait()) {
+        if (!isPortrait()) {
             toggleT9();
         }
         // Stop listening for phone state changes.
