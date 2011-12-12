@@ -165,7 +165,11 @@ class T9Search {
             }
             pos = item.normalName.indexOf(number);
             if (pos != -1) {
-                item.nameMatchId = pos;
+                int last_space = item.normalName.lastIndexOf("0", pos);
+                if (last_space == -1) {
+                    last_space = 0;
+                }
+                item.nameMatchId = pos - last_space;
                 mNameResults.add(item);
             }
         }

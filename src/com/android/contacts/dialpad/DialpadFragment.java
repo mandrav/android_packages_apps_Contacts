@@ -759,7 +759,8 @@ public class DialpadFragment extends Fragment
                     String normalizedInput = T9Search.removeNonDigits(mDigits.getText().toString());
                     int normalizedLength = normalizedInput.length();
                     if (contact.nameMatchId != -1) {
-                        WordtoSpan.setSpan(new ForegroundColorSpan(getResources().getColor(android.R.color.holo_blue_dark)), contact.nameMatchId, contact.nameMatchId + normalizedLength, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+                        int nameStart = contact.normalName.indexOf(normalizedInput);
+                        WordtoSpan.setSpan(new ForegroundColorSpan(getResources().getColor(android.R.color.holo_blue_dark)), nameStart, nameStart + normalizedLength, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
                     }
                     if (contact.numberMatchId != -1) {
                         int numberStart = contact.name.length() + 3 + contact.numberMatchId;
