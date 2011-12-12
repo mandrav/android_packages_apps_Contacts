@@ -84,11 +84,9 @@ class T9Search {
 
         while (contact.moveToNext()) {
             long contactId = contact.getLong(0);
-
             if (phone.isAfterLast()) {
                 break;
             }
-
             while (phone.getLong(1) == contactId) {
                 String num = phone.getString(0);
                 ContactItem contactInfo = new ContactItem();
@@ -100,11 +98,10 @@ class T9Search {
                 contactInfo.timesContacted = contact.getInt(2);
                 contactInfo.isSuperPrimary = phone.getInt(2) > 0;
                 contactInfo.groupType = getMatchingGroup(phone.getInt(3));
-                if (!contact.isNull(3))
+                if (!contact.isNull(3)) {
                     contactInfo.photo = Uri.parse(contact.getString(3));
-
+                }
                 mContacts.add(contactInfo);
-
                 if (!phone.moveToNext()) {
                     break;
                 }

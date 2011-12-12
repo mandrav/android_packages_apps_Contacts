@@ -514,7 +514,7 @@ public class DialpadFragment extends Fragment
         PhoneNumberFormatter.setPhoneNumberFormattingTextWatcher(getActivity(), mDigits);
 
         if (isPortrait() && isT9On()) {
-            if (mT9Toggle.isChecked()){
+            if (mT9Toggle.isChecked()) {
                 return;
             } else {
                 searchContacts();
