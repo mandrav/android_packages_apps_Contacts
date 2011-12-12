@@ -34,7 +34,7 @@ class T9Search {
     private static final int NUMBER_FIRST = 2;
 
     // Phone number queries
-    private static final String[] PHONE_PROJECTION = new String[] {Phone.NUMBER, Phone.CONTACT_ID, Phone.IS_SUPER_PRIMARY};
+    private static final String[] PHONE_PROJECTION = new String[] {Phone.NUMBER, Phone.CONTACT_ID, Phone.IS_SUPER_PRIMARY, Phone.TYPE};
     private static final String PHONE_ID_SELECTION = Contacts.Data.MIMETYPE + " = ? ";
     private static final String[] PHONE_ID_SELECTION_ARGS = new String[] {Phone.CONTENT_ITEM_TYPE};
     private static final String PHONE_SORT = Phone.CONTACT_ID + " ASC";
@@ -50,6 +50,7 @@ class T9Search {
     private Set<ContactItem> mAllResults = new LinkedHashSet<ContactItem>();
     private ArrayList<ContactItem> mContacts = new ArrayList<ContactItem>();
     private static char[][] sT9Map;
+    private static String[] sT9GroupMap;
     private static String prevInput = "previous_input";
 
     public T9Search(Context context) {
@@ -82,6 +83,7 @@ class T9Search {
                 contactInfo.normalName = nameToNumber(contact.getString(1));
                 contactInfo.timesContacted = contact.getInt(2);
                 contactInfo.isSuperPrimary = phone.getInt(2) > 0;
+                contactInfo.groupType = getMatchingGroup(phone.getInt(3));
                 if (!contact.isNull(3))
                     contactInfo.photo = Uri.parse(contact.getString(3));
 
@@ -95,6 +97,18 @@ class T9Search {
         contact.close();
         phone.close();
     }
+
+    private String getMatchingGroup(int id) {
+        if (sT9GroupMap == null) {
+            sT9GroupMap = mContext.getResources().getStringArray(R.array.t9_grouptype);
+        }
+        if (id >= sT9GroupMap.length || id < 0) {
+            return sT9GroupMap[6];
+        } else {
+            return sT9GroupMap[id];
+        }
+    }
+
 
     public static class T9SearchResult {
 
@@ -129,6 +143,7 @@ class T9Search {
         int timesContacted;
         int nameMatchId;
         int numberMatchId;
+        String groupType;
         long id;
         boolean isSuperPrimary;
     }
@@ -160,13 +175,13 @@ class T9Search {
         Collections.sort(mNameResults, new NameComparator());
         if (mNameResults.size() > 0 || mNumberResults.size() > 0) {
             switch (mSortMode) {
-                case NAME_FIRST:
-                    mAllResults.addAll(mNameResults);
-                    mAllResults.addAll(mNumberResults);
-                    break;
-                case NUMBER_FIRST:
-                    mAllResults.addAll(mNumberResults);
-                    mAllResults.addAll(mNameResults);
+            case NAME_FIRST:
+                mAllResults.addAll(mNameResults);
+                mAllResults.addAll(mNumberResults);
+                break;
+            case NUMBER_FIRST:
+                mAllResults.addAll(mNumberResults);
+                mAllResults.addAll(mNameResults);
             }
             return new T9SearchResult(new ArrayList<ContactItem>(mAllResults), mContext);
         }
@@ -274,8 +289,7 @@ class T9Search {
 
             ContactItem o = mItems.get(position);
             holder.name.setText(o.name);
-            holder.number.setText(o.number);
-
+            holder.number.setText(o.number + " (" + o.groupType + ")");
             if (o.photo != null)
                 mPhotoLoader.loadPhoto(holder.icon, o.photo, false, true);
             else
