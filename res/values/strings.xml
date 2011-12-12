@@ -27,7 +27,8 @@
     <string name="t9_sort_summary">Choose how to filter t9 results</string>
     <string name="t9_state_title">Enable T9 dialer</string>
     <string name="t9_state_summary">Toggle t9 dialer state</string>
-
+    <string name="t9_dial_click_title">Dial selected contact</string>
+    <string name="t9_dial_click_summary">Dial the selected contact for T9</string>
 
     <!-- Directory partition name -->
     <string name="contactsList">Contacts</string>
