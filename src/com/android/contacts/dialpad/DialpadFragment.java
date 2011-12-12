@@ -245,7 +245,6 @@ public class DialpadFragment extends Fragment
             }
         });
         loadContacts.start();
-
         mPhotoLoader = ContactPhotoManager.getInstance(getActivity());
         mPhotoLoader.preloadPhotosInBackground();
         mCurrentCountryIso = ContactsUtils.getCurrentCountryIso(getActivity());
@@ -291,8 +290,6 @@ public class DialpadFragment extends Fragment
             mT9Toggle.setOnClickListener(this);
         }
         mT9Flipper = (ViewSwitcher) fragmentView.findViewById(R.id.t9flipper);
-        hideT9(fragmentView);
-        PhoneNumberFormatter.setPhoneNumberFormattingTextWatcher(getActivity(), mDigits);
 
         // Soft menu button should appear only when there's no hardware menu button.
         final View overflowMenuButton = fragmentView.findViewById(R.id.overflow_menu);
@@ -514,6 +511,7 @@ public class DialpadFragment extends Fragment
     @Override
     public void onResume() {
         super.onResume();
+        PhoneNumberFormatter.setPhoneNumberFormattingTextWatcher(getActivity(), mDigits);
 
         if (isPortrait() && isT9On()) {
             if (mT9Toggle.isChecked()){
@@ -522,7 +520,7 @@ public class DialpadFragment extends Fragment
                 searchContacts();
             }
         }
-        hideT9(null);
+        hideT9();
         // Query the last dialed number. Do it first because hitting
         // the DB is 'slow'. This call is asynchronous.
         queryLastOutgoingCall();
@@ -705,16 +703,11 @@ public class DialpadFragment extends Fragment
      * Hides the topresult layout
      * Needed to reclaim the space when T9 is off.
      */
-    private void hideT9 (View view) {
+    private void hideT9 () {
         if (!isPortrait()) {
             return;
         }
-        LinearLayout t9top = null;
-        if (view == null) {
-            t9top = (LinearLayout)getActivity().findViewById(R.id.t9topbar);
-        } else {
-            t9top = (LinearLayout)view.findViewById(R.id.t9topbar);
-        }
+        LinearLayout t9top = (LinearLayout)getActivity().findViewById(R.id.t9topbar);
         LinearLayout.LayoutParams digitsLayout = (LayoutParams) mDigitsContainer.getLayoutParams();
         if (!isT9On()) {
             digitsLayout.weight = 0.2f;
@@ -732,7 +725,7 @@ public class DialpadFragment extends Fragment
      */
     private void toggleT9() {
         if (!isT9On()) {
-            hideT9(null);
+            hideT9();
             return;
         }
         if (mT9Flipper.getCurrentView() == mT9List) {
@@ -760,27 +753,26 @@ public class DialpadFragment extends Fragment
                     int normalizedLength = normalizedInput.length();
                     if (contact.nameMatchId != -1) {
                         int nameStart = contact.normalName.indexOf(normalizedInput);
-                        WordtoSpan.setSpan(new ForegroundColorSpan(getResources().getColor(android.R.color.holo_blue_dark)), nameStart, nameStart + normalizedLength, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+                        WordtoSpan.setSpan(new ForegroundColorSpan(getResources().getColor(android.R.color.holo_blue_dark)), nameStart,
+                                nameStart + normalizedLength, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
                     }
                     if (contact.numberMatchId != -1) {
                         int numberStart = contact.name.length() + 3 + contact.numberMatchId;
-                        WordtoSpan.setSpan(new ForegroundColorSpan(getResources().getColor(android.R.color.holo_blue_dark)), numberStart, numberStart + normalizedLength, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+                        WordtoSpan.setSpan(new ForegroundColorSpan(getResources().getColor(android.R.color.holo_blue_dark)),
+                                numberStart, numberStart + normalizedLength, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
                     }
                     mT9Result.setText(WordtoSpan);
                     mT9ResultBadge.assignContactFromPhone(contact.number, true);
                     mT9ResultBadge.setTag(contact.number);
-
                     if (contact.photo != null)
                         mPhotoLoader.loadPhoto(mT9ResultBadge, contact.photo, false, true);
                     else
                         mT9ResultBadge.setImageResource(ContactPhotoManager.getDefaultAvatarResId(false, true));
-
                     if (result.getNumResults()>  1) {
                         mT9Toggle.setVisibility(View.VISIBLE);
                     } else {
                         mT9Toggle.setVisibility(View.GONE);
                     }
-
                     if (mT9Adapter == null) {
                         mT9Adapter = new T9Adapter(getActivity(), 0, result.getResults(),getActivity().getLayoutInflater(), mPhotoLoader);
                         mT9Adapter.setNotifyOnChange(true);
@@ -789,10 +781,9 @@ public class DialpadFragment extends Fragment
                         mT9Adapter.clear();
                         mT9Adapter.addAll(result.getResults());
                     }
-
-                    if (mT9List.getAdapter() == null)
+                    if (mT9List.getAdapter() == null) {
                         mT9List.setAdapter(mT9Adapter);
-
+                    }
                     mT9ResultBadge.setVisibility(View.VISIBLE);
                     mT9Result.setVisibility(View.VISIBLE);
                 } else {
