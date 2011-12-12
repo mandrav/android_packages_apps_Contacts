@@ -813,6 +813,14 @@ public class DialpadFragment extends Fragment
     }
 
     /**
+     * Returns preference for whether to dial
+     * upon clicking contact in listview/topbar
+     */
+    private boolean dialOnTap() {
+        return PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean("t9_dial_onclick", false);
+    }
+
+    /**
      * Animates the dialpad/listview
      */
     private void animateT9() {
@@ -968,6 +976,9 @@ public class DialpadFragment extends Fragment
             }
             case R.id.t9result: {
                 setFormattedDigits(mT9ResultBadge.getTag().toString(),null);
+                if (dialOnTap()) {
+                    dialButtonPressed();
+                }
                 return;
             }
         }
@@ -1370,6 +1381,9 @@ public class DialpadFragment extends Fragment
     public void onItemClick(AdapterView parent, View v, int position, long id) {
         if (parent == mT9List) {
             setFormattedDigits(mT9Adapter.getItem(position).number,null);
+            if (dialOnTap()) {
+                dialButtonPressed();
+            }
             return;
         }
         DialpadChooserAdapter.ChoiceItem item =

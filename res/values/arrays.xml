@@ -36,6 +36,7 @@
     <item>9wxyz</item>
   </string-array>
   <string-array name="t9_grouptype">
+    <item>None</item>
     <item>Home</item>
     <item>Mobile</item>
     <item>Work</item>

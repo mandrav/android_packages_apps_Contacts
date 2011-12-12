@@ -98,18 +98,6 @@ class T9Search {
         phone.close();
     }
 
-    private String getMatchingGroup(int id) {
-        if (sT9GroupMap == null) {
-            sT9GroupMap = mContext.getResources().getStringArray(R.array.t9_grouptype);
-        }
-        if (id >= sT9GroupMap.length || id < 0) {
-            return sT9GroupMap[6];
-        } else {
-            return sT9GroupMap[id];
-        }
-    }
-
-
     public static class T9SearchResult {
 
         private final ArrayList<ContactItem> mResults;
@@ -261,6 +249,17 @@ class T9Search {
             }
         }
         return sb.toString();
+    }
+
+    private String getMatchingGroup(int id) {
+        if (sT9GroupMap == null) {
+            sT9GroupMap = mContext.getResources().getStringArray(R.array.t9_grouptype);
+        }
+        if (id >= sT9GroupMap.length || id < 1) {
+            return sT9GroupMap[6];
+        } else {
+            return sT9GroupMap[id];
+        }
     }
 
     protected static class T9Adapter extends ArrayAdapter<ContactItem> {
