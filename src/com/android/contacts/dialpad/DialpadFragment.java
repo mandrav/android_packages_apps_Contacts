@@ -513,14 +513,6 @@ public class DialpadFragment extends Fragment
         super.onResume();
         PhoneNumberFormatter.setPhoneNumberFormattingTextWatcher(getActivity(), mDigits);
 
-        if (isPortrait() && isT9On()) {
-            if (mT9Toggle.isChecked()) {
-                return;
-            } else {
-                searchContacts();
-            }
-        }
-        hideT9();
         // Query the last dialed number. Do it first because hitting
         // the DB is 'slow'. This call is asynchronous.
         queryLastOutgoingCall();
@@ -580,7 +572,13 @@ public class DialpadFragment extends Fragment
 
             // Also, a sanity-check: the "dialpad chooser" UI should NEVER
             // be visible if the phone is idle!
-            showDialpadChooser(false);
+            if (!mDigits.getText().toString().isEmpty()) {
+                mT9Toggle.setChecked(false);
+                searchContacts();
+                return;
+            } else {
+                showDialpadChooser(false);
+            }
         }
 
         updateDialAndDeleteButtonEnabledState();
@@ -589,9 +587,7 @@ public class DialpadFragment extends Fragment
     @Override
     public void onPause() {
         super.onPause();
-        if (!isPortrait() && isT9On()) {
-            toggleT9();
-        }
+
         // Stop listening for phone state changes.
         TelephonyManager telephonyManager =
                 (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
@@ -704,9 +700,6 @@ public class DialpadFragment extends Fragment
      * Needed to reclaim the space when T9 is off.
      */
     private void hideT9 () {
-        if (!isPortrait()) {
-            return;
-        }
         LinearLayout t9top = (LinearLayout)getActivity().findViewById(R.id.t9topbar);
         LinearLayout.LayoutParams digitsLayout = (LayoutParams) mDigitsContainer.getLayoutParams();
         if (!isT9On()) {
@@ -739,7 +732,7 @@ public class DialpadFragment extends Fragment
      * Toggles view visibility based on results
      */
     private void searchContacts() {
-        if (!isPortrait() || !isT9On())
+        if (!isT9On())
             return;
         final int length = mDigits.length();
         if (length > 0) {
@@ -799,10 +792,6 @@ public class DialpadFragment extends Fragment
             mT9Toggle.setVisibility(View.INVISIBLE);
             toggleT9();
         }
-    }
-
-    private boolean isPortrait() {
-        return getResources().getConfiguration().orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
     }
 
     /**

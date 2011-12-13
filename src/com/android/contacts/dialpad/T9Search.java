@@ -155,8 +155,9 @@ class T9Search {
         number = removeNonDigits(number);
         int pos = 0;
         mSortMode = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(mContext).getString("t9_sort", "1"));
+        boolean newQuery = number.length() == 1 || number.length() < prevInput.length();
         // Go through each contact
-        for (ContactItem item : (number.length() == 1 || number.length() < prevInput.length() ? mContacts : mAllResults)) {
+        for (ContactItem item : (newQuery ? mContacts : mAllResults)) {
             item.numberMatchId = -1;
             item.nameMatchId = -1;
             pos = item.normalNumber.indexOf(number);
