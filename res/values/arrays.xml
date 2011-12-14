@@ -26,14 +26,14 @@
   <string-array name="t9_map">
     <item>0</item>
     <item>1</item>
-    <item>2abcàáâäåɑæç</item>
+    <item>2abcàáâäåɑæçǽćčá</item>
     <item>3deféèêë</item>
-    <item>4ghiíìïî</item>
-    <item>5jkl</item>
-    <item>6mnoòóöôøñŋ</item>
-    <item>7pqrsßɾ</item>
-    <item>8tuvúùüû</item>
-    <item>9wxyz</item>
+    <item>4ghiíìïîǵ</item>
+    <item>5jklḱḱĺ</item>
+    <item>6mnoòóöôøñŋǿḿńő</item>
+    <item>7pqrsßɾṕŕśřš</item>
+    <item>8tuvúùüûű</item>
+    <item>9wxyzýẃź</item>
   </string-array>
   <string-array name="t9_grouptype">
     <item>None</item>
