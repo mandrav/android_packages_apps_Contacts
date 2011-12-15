@@ -34,7 +34,6 @@
         android:layout_width="match_parent"
         android:layout_height="0px"
         android:id="@+id/t9topbar"
-        android:background="@drawable/dialpad_background"
         android:layout_gravity="center"
         android:gravity="center"
         android:layout_weight="0.3">
@@ -92,7 +91,6 @@
             android:layout_width="match_parent"
             android:id="@+id/t9list"
             android:visibility="gone"
-            android:background="@drawable/dialpad_background"
             android:scrollingCache="true"
             android:layout_height="match_parent" />
     </ViewSwitcher>

@@ -143,6 +143,7 @@ public class DialpadFragment extends Fragment
     private QuickContactBadge mT9ResultBadge;
     private T9Adapter mT9Adapter;
     private ViewSwitcher mT9Flipper;
+    private LinearLayout mT9Top;
 
     /**
      * Regular expression prohibiting manual phone call. Can be empty, which means "no rule".
@@ -290,7 +291,7 @@ public class DialpadFragment extends Fragment
             mT9Toggle.setOnClickListener(this);
         }
         mT9Flipper = (ViewSwitcher) fragmentView.findViewById(R.id.t9flipper);
-
+        mT9Top = (LinearLayout) fragmentView.findViewById(R.id.t9topbar);
         // Soft menu button should appear only when there's no hardware menu button.
         final View overflowMenuButton = fragmentView.findViewById(R.id.overflow_menu);
         if (overflowMenuButton != null) {
@@ -512,7 +513,7 @@ public class DialpadFragment extends Fragment
     public void onResume() {
         super.onResume();
         PhoneNumberFormatter.setPhoneNumberFormattingTextWatcher(getActivity(), mDigits);
-
+        hideT9();
         // Query the last dialed number. Do it first because hitting
         // the DB is 'slow'. This call is asynchronous.
         queryLastOutgoingCall();
@@ -572,7 +573,7 @@ public class DialpadFragment extends Fragment
 
             // Also, a sanity-check: the "dialpad chooser" UI should NEVER
             // be visible if the phone is idle!
-                showDialpadChooser(false);
+            showDialpadChooser(false);
         }
 
         updateDialAndDeleteButtonEnabledState();
@@ -694,16 +695,23 @@ public class DialpadFragment extends Fragment
      * Needed to reclaim the space when T9 is off.
      */
     private void hideT9 () {
-        LinearLayout t9top = (LinearLayout)getActivity().findViewById(R.id.t9topbar);
-        LinearLayout.LayoutParams digitsLayout = (LayoutParams) mDigitsContainer.getLayoutParams();
-        if (!isT9On()) {
-            digitsLayout.weight = 0.2f;
-            t9top.setVisibility(View.GONE);
+        if (mDigitsContainer == null) {
+            if (!isT9On()) {
+                mT9Top.setVisibility(View.GONE);
+            }else{
+                mT9Top.setVisibility(View.VISIBLE);
+            }
         } else {
-            digitsLayout.weight = 0.1f;
-            t9top.setVisibility(View.VISIBLE);
+            LinearLayout.LayoutParams digitsLayout = (LayoutParams) mDigitsContainer.getLayoutParams();
+            if (!isT9On()) {
+                digitsLayout.weight = 0.2f;
+                mT9Top.setVisibility(View.GONE);
+            } else {
+                digitsLayout.weight = 0.1f;
+                mT9Top.setVisibility(View.VISIBLE);
+            }
+            mDigitsContainer.setLayoutParams(digitsLayout);
         }
-        mDigitsContainer.setLayoutParams(digitsLayout);
         return;
     }
 
