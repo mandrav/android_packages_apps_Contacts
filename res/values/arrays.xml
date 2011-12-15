@@ -38,27 +38,4 @@
     <item>#</item>
     <item>+</item>
   </string-array>
-  <string-array name="t9_grouptype">
-    <item>None</item>
-    <item>Home</item>
-    <item>Mobile</item>
-    <item>Work</item>
-    <item>Fax work</item>
-    <item>Fax home</item>
-    <item>Pager</item>
-    <item>Other</item>
-    <item>Callback</item>
-    <item>Car</item>
-    <item>Company Main</item>
-    <item>Isdn</item>
-    <item>Main</item>
-    <item>Fax</item>
-    <item>Radio</item>
-    <item>Telex</item>
-    <item>Tty tdd</item>
-    <item>Work mobile</item>
-    <item>Work pager</item>
-    <item>Assistant</item>
-    <item>Mms</item>
-  </string-array>
 </resources>

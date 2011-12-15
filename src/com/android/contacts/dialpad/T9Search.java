@@ -50,7 +50,7 @@ class T9Search {
     private static final int NUMBER_FIRST = 2;
 
     // Phone number queries
-    private static final String[] PHONE_PROJECTION = new String[] {Phone.NUMBER, Phone.CONTACT_ID, Phone.IS_SUPER_PRIMARY, Phone.TYPE};
+    private static final String[] PHONE_PROJECTION = new String[] {Phone.NUMBER, Phone.CONTACT_ID, Phone.IS_SUPER_PRIMARY, Phone.TYPE, Phone.LABEL};
     private static final String PHONE_ID_SELECTION = Contacts.Data.MIMETYPE + " = ? ";
     private static final String[] PHONE_ID_SELECTION_ARGS = new String[] {Phone.CONTENT_ITEM_TYPE};
     private static final String PHONE_SORT = Phone.CONTACT_ID + " ASC";
@@ -67,7 +67,6 @@ class T9Search {
     private ArrayList<ContactItem> mContacts = new ArrayList<ContactItem>();
     private String mPrevInput;
     private static char[][] sT9Map;
-    private static String[] sT9GroupMap;
 
     public T9Search(Context context) {
         mContext = context;
@@ -97,7 +96,7 @@ class T9Search {
                 contactInfo.normalName = nameToNumber(contact.getString(1));
                 contactInfo.timesContacted = contact.getInt(2);
                 contactInfo.isSuperPrimary = phone.getInt(2) > 0;
-                contactInfo.groupType = getMatchingGroup(phone.getInt(3));
+                contactInfo.groupType = Phone.getTypeLabel(mContext.getResources(), phone.getInt(3), phone.getString(4));
                 if (!contact.isNull(3)) {
                     contactInfo.photo = Uri.parse(contact.getString(3));
                 }
@@ -144,7 +143,7 @@ class T9Search {
         int timesContacted;
         int nameMatchId;
         int numberMatchId;
-        String groupType;
+        CharSequence groupType;
         long id;
         boolean isSuperPrimary;
     }
@@ -264,17 +263,6 @@ class T9Search {
             }
         }
         return sb.toString();
-    }
-
-    private String getMatchingGroup(int id) {
-        if (sT9GroupMap == null) {
-            sT9GroupMap = mContext.getResources().getStringArray(R.array.t9_grouptype);
-        }
-        if (id >= sT9GroupMap.length || id < 1) {
-            return sT9GroupMap[6];
-        } else {
-            return sT9GroupMap[id];
-        }
     }
 
     protected static class T9Adapter extends ArrayAdapter<ContactItem> {
