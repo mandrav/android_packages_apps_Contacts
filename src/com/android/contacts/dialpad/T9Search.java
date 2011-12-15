@@ -215,9 +215,10 @@ class T9Search {
     }
 
     private void initT9Map() {
-        sT9Map = new char[10][];
+        String[] t9Array = mContext.getResources().getStringArray(R.array.t9_map);
+        sT9Map = new char[t9Array.length][];
         int rc = 0;
-        for (String item : mContext.getResources().getStringArray(R.array.t9_map)) {
+        for (String item : t9Array) {
             int cc = 0;
             sT9Map[rc] = new char[item.length()];
             for (char ch : item.toCharArray()) {
@@ -258,7 +259,7 @@ class T9Search {
         StringBuilder sb = new StringBuilder(len);
         for (int i = 0; i < len; i++) {
             char ch = number.charAt(i);
-            if (ch >= '0' && ch <= '9') {
+            if ((ch >= '0' && ch <= '9') || ch == '*' || ch == '#' || ch == '+') {
                 sb.append(ch);
             }
         }
