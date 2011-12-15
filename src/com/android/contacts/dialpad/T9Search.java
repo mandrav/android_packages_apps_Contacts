@@ -65,9 +65,9 @@ class T9Search {
     private ArrayList<ContactItem> mNumberResults = new ArrayList<ContactItem>();
     private Set<ContactItem> mAllResults = new LinkedHashSet<ContactItem>();
     private ArrayList<ContactItem> mContacts = new ArrayList<ContactItem>();
+    private String mPrevInput;
     private static char[][] sT9Map;
     private static String[] sT9GroupMap;
-    private static String prevInput = "previous_input";
 
     public T9Search(Context context) {
         mContext = context;
@@ -155,7 +155,7 @@ class T9Search {
         number = removeNonDigits(number);
         int pos = 0;
         mSortMode = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(mContext).getString("t9_sort", "1"));
-        boolean newQuery = number.length() == 1 || number.length() < prevInput.length();
+        boolean newQuery = mPrevInput == null || number.length() <= mPrevInput.length();
         // Go through each contact
         for (ContactItem item : (newQuery ? mContacts : mAllResults)) {
             item.numberMatchId = -1;
@@ -176,7 +176,7 @@ class T9Search {
             }
         }
         mAllResults.clear();
-        prevInput = number;
+        mPrevInput = number;
         Collections.sort(mNumberResults, new NumberComparator());
         Collections.sort(mNameResults, new NameComparator());
         if (mNameResults.size() > 0 || mNumberResults.size() > 0) {
