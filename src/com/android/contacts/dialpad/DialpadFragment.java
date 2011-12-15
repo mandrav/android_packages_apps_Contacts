@@ -572,13 +572,7 @@ public class DialpadFragment extends Fragment
 
             // Also, a sanity-check: the "dialpad chooser" UI should NEVER
             // be visible if the phone is idle!
-            if (!mDigits.getText().toString().isEmpty()) {
-                mT9Toggle.setChecked(false);
-                searchContacts();
-                return;
-            } else {
                 showDialpadChooser(false);
-            }
         }
 
         updateDialAndDeleteButtonEnabledState();
@@ -798,7 +792,7 @@ public class DialpadFragment extends Fragment
      * Returns preference value for T9Dialer
      */
     private boolean isT9On() {
-        return PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean("t9_state", false);
+        return PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean("t9_state", true);
     }
 
     /**
@@ -958,6 +952,7 @@ public class DialpadFragment extends Fragment
                 if (popup != null) {
                     popup.show();
                 }
+                return;
             }
             case R.id.t9toggle: {
                 animateT9();
@@ -1226,6 +1221,13 @@ public class DialpadFragment extends Fragment
      *                of the regular Dialer UI
      */
     private void showDialpadChooser(boolean enabled) {
+        if (isT9On() && !mDigits.getText().toString().isEmpty()) {
+            if (mT9Flipper.getCurrentView() != mT9List) {
+                mT9Toggle.setChecked(false);
+                searchContacts();
+            }
+            return;
+        }
         // Check if onCreateView() is already called by checking one of View objects.
         if (!isLayoutReady()) {
             return;
