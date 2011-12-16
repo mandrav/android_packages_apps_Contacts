@@ -69,7 +69,9 @@ class T9Search {
 
     public T9Search(Context context) {
         mContext = context;
-        getAll();
+        if (PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean("t9_state", true)) {
+            getAll();
+        }
     }
 
     private void getAll() {
@@ -148,6 +150,9 @@ class T9Search {
     }
 
     public T9SearchResult search(String number) {
+        if (mContacts.isEmpty()) {
+            getAll();
+        }
         mNameResults.clear();
         mNumberResults.clear();
         number = removeNonDigits(number);
