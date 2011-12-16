@@ -135,8 +135,8 @@ public class DialpadFragment extends Fragment
     private ListView mDialpadChooser;
     private DialpadChooserAdapter mDialpadChooserAdapter;
 
+    private static T9Search sT9Search; // Static to avoid reloading when class is destroyed and recreated
     private ContactPhotoManager mPhotoLoader;
-    private T9Search mT9Search;
     private ToggleButton mT9Toggle;
     private ListView mT9List;
     private TextView mT9Result;
@@ -240,12 +240,6 @@ public class DialpadFragment extends Fragment
     @Override
     public void onCreate(Bundle state) {
         super.onCreate(state);
-        Thread loadContacts = new Thread(new Runnable() {
-            public void run () {
-                mT9Search = new T9Search(getActivity());
-            }
-        });
-        loadContacts.start();
         mPhotoLoader = ContactPhotoManager.getInstance(getActivity());
         mPhotoLoader.preloadPhotosInBackground();
         mCurrentCountryIso = ContactsUtils.getCurrentCountryIso(getActivity());
@@ -512,6 +506,16 @@ public class DialpadFragment extends Fragment
     @Override
     public void onResume() {
         super.onResume();
+
+        if (sT9Search == null && isT9On()) {
+            Thread loadContacts = new Thread(new Runnable() {
+                public void run () {
+                    sT9Search = new T9Search(getActivity());
+                }
+            });
+            loadContacts.start();
+        }
+
         PhoneNumberFormatter.setPhoneNumberFormattingTextWatcher(getActivity(), mDigits);
         hideT9();
         // Query the last dialed number. Do it first because hitting
@@ -738,8 +742,8 @@ public class DialpadFragment extends Fragment
             return;
         final int length = mDigits.length();
         if (length > 0) {
-            if (mT9Search != null) {
-                T9SearchResult result = mT9Search.search(mDigits.getText().toString());
+            if (sT9Search != null) {
+                T9SearchResult result = sT9Search.search(mDigits.getText().toString());
                 if (result != null) {
                     T9Search.ContactItem contact = result.getTopContact();
                     mT9Result.setText(contact.name + " : " + contact.normalNumber, TextView.BufferType.SPANNABLE);
