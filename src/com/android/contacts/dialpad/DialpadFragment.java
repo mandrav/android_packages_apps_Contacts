@@ -1239,13 +1239,6 @@ public class DialpadFragment extends Fragment
      *                of the regular Dialer UI
      */
     private void showDialpadChooser(boolean enabled) {
-        if (isT9On() && !mDigits.getText().toString().isEmpty()) {
-            if (mT9Flipper.getCurrentView() != mT9List) {
-                mT9Toggle.setChecked(false);
-                searchContacts();
-            }
-            return;
-        }
         // Check if onCreateView() is already called by checking one of View objects.
         if (!isLayoutReady()) {
             return;
@@ -1270,6 +1263,14 @@ public class DialpadFragment extends Fragment
             }
             mDialpadChooser.setAdapter(mDialpadChooserAdapter);
         } else {
+            if (isT9On() && !mDigits.getText().toString().isEmpty()) {
+                if (mT9Flipper.getCurrentView() != mT9List) {
+                    mT9Toggle.setChecked(false);
+                    searchContacts();
+                } else {
+                    return;
+                }
+            }
             // Log.i(TAG, "Displaying normal Dialer UI.");
             if (mDigitsContainer != null) {
                 mDigitsContainer.setVisibility(View.VISIBLE);
