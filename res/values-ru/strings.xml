@@ -16,6 +16,22 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="t9_sort_title">Режим сортировки T9</string>
+    <string name="t9_sort_summary">Выберите для фильтрации результатов T9</string>
+    <string name="t9_sort_name">Вначале по именам</string>
+    <string name="t9_sort_number">Вначале по номерам</string>
+    <string name="t9_state_title">Включить поиск T9</string>
+    <string name="t9_state_summary">Включить поиск T9 в номеронабирателе</string>
+    <string name="t9_dial_click_title">Набор выбранного контакта</string>
+    <string name="t9_dial_click_summary">Набор выбранного контакта T9</string>
+    <string name="t9_map_row_2">2abcäабвг</string>
+    <string name="t9_map_row_3">3defëдежз</string>
+    <string name="t9_map_row_4">4ghiийкл</string>
+    <string name="t9_map_row_5">5jklмноп</string>
+    <string name="t9_map_row_6">6mnoöрсту</string>
+    <string name="t9_map_row_7">7pqrsßфхцч</string>
+    <string name="t9_map_row_8">8tuvüшщъы</string>
+    <string name="t9_map_row_9">9wxyzьэюя</string>
     <string name="launcherDialer" msgid="8636288196618486553">"Телефон"</string>
     <string name="people" msgid="1048457247435785074">"Контакты"</string>
     <string name="contactsList" msgid="8661624236494819731">"Контакты"</string>
